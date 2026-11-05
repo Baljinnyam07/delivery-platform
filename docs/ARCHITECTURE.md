@@ -450,17 +450,16 @@ Google Maps: `https://www.google.com/maps/dir/?api=1&destination=<lat,lng | enco
 | `cancel_delivery(delivery_id, reason)` | admin | delivery |
 | `void_payment(payment_id, reason)` | admin | payment_record |
 | `set_courier_active(courier_id, active)` | admin | profile (blocks deactivation while courier has active deliveries) |
-| `get_dashboard_stats(from, to)` | admin | KPI json |
-| `get_courier_stats(from, to)` | admin | per-courier rows |
-| `mark_notifications_read(ids[])` | any | void |
+| `get_dashboard_stats(from, to)` | admin | KPI json *(Phase 4)* |
+| `get_courier_stats(from, to)` | admin | per-courier rows *(Phase 4)* |
 
-Direct writes allowed: admin `insert`/`update` (descriptive columns) on `deliveries`; own profile fields.
+Direct writes allowed: admin `insert`/`update` (descriptive columns) on `deliveries`; own profile fields (`full_name`, `phone`, `expo_push_token`); own notifications (`read_at` only).
 
-Server-only (admin, service role): **create courier account** → `auth.admin.createUser` + insert profile. Called only from a Server Action after verifying the caller is admin.
+Server-only (admin, service role): **create courier account** → `auth.admin.createUser({ email, password, app_metadata: { role: "COURIER" }, user_metadata: { full_name, phone } })`. The `on_auth_user_created` trigger creates the profile; users without `app_metadata.role` get no profile and no access. Public sign-up is disabled (`enable_signup = false`). Called only from a Server Action after verifying the caller is admin.
 
 ### Error contract
 RPCs raise stable codes; `shared/errors.ts` maps them to UI messages:
-`NOT_AUTHORIZED`, `USER_INACTIVE`, `DELIVERY_NOT_FOUND`, `DELIVERY_NOT_AVAILABLE`, `INVALID_TRANSITION`, `REASON_REQUIRED`, `COURIER_INACTIVE`, `PAYMENT_ALREADY_RECORDED`, `HAS_ACTIVE_DELIVERIES`.
+`NOT_AUTHORIZED`, `USER_INACTIVE`, `DELIVERY_NOT_FOUND`, `DELIVERY_NOT_AVAILABLE`, `INVALID_TRANSITION`, `REASON_REQUIRED`, `SAME_COURIER`, `COURIER_NOT_FOUND`, `COURIER_INACTIVE`, `HAS_ACTIVE_DELIVERIES`, `PAYMENT_NOT_ALLOWED`, `PAYMENT_NOT_REQUIRED`, `PAYMENT_ALREADY_RECORDED`, `PAYMENT_NOT_FOUND`, `PAYMENT_ALREADY_VOIDED`, `AMOUNT_MISMATCH`, `AMOUNT_LOCKED`, `INVALID_RECEIPT_PATH`.
 
 Types: `supabase gen types typescript` → `packages/shared/src/database.types.ts`; both apps use typed clients.
 
@@ -504,8 +503,8 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 
 | Phase | Scope | Exit criteria |
 |---|---|---|
-| **0** | Monorepo, workspace, docs *(this step)* | Approved architecture |
-| **1** | Supabase: migrations, RLS, RPCs, triggers, seed | pgTAP tests pass, incl. concurrency test |
+| **0** ✅ | Monorepo, workspace, docs | Approved architecture |
+| **1** ✅ | Supabase: migrations, RLS, RPCs, triggers, seed | pgTAP tests pass, incl. concurrency test |
 | **2** | `@delivery/shared`: generated types, enums, status map, zod schemas, error map | Typecheck passes |
 | **3** | Admin: scaffold, design tokens, auth, shell, deliveries CRUD + assign/reassign | Create → assign → reassign works end-to-end |
 | **4** | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct |

@@ -6,6 +6,15 @@
     "dev:admin": "pnpm --filter admin dev",
     "dev:courier": "pnpm --filter courier start",
     "build:admin": "pnpm --filter admin build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:test:race": "bash supabase/tests/concurrency/claim_race.sh",
+    "db:types": "supabase gen types typescript --local > packages/shared/src/database.types.ts"
+  },
+  "devDependencies": {
+    "supabase": "^3.0.0"
   }
 }

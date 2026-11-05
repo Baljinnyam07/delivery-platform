@@ -3,7 +3,7 @@
 Delivery management for small and medium-sized delivery businesses:
 an admin web app and a courier mobile app on top of Supabase.
 
-> Status: **Phase 0 — architecture proposal.** See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+> Status: **Phase 1 — database ready** (schema, RLS, RPCs, tests). See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Workspace
 
@@ -25,13 +25,24 @@ an admin web app and a courier mobile app on top of Supabase.
 
 - Node.js 22+
 - pnpm 10 (`corepack enable`)
-- Supabase CLI (Phase 1)
+- Docker Desktop (local Supabase)
 
 ## Scripts
 
 ```bash
-pnpm dev:admin      # Next.js admin
-pnpm dev:courier    # Expo courier app
-pnpm build:admin
-pnpm typecheck
+pnpm install
+pnpm db:start       # local Supabase (API http://127.0.0.1:55321, DB port 55322)
+pnpm db:reset       # re-apply migrations + seed
+pnpm db:test        # pgTAP tests (RLS, RPCs, payments, notifications)
+pnpm db:test:race   # concurrency test: N couriers claim one delivery
+pnpm db:types       # generate TS types into packages/shared
+pnpm dev:admin      # Next.js admin (Phase 3)
+pnpm dev:courier    # Expo courier app (Phase 5)
 ```
+
+Local ports use 553xx to avoid clashing with other local Supabase projects.
+
+### Local test accounts (seed only)
+
+Defined in [supabase/seed.sql](supabase/seed.sql): one admin and three couriers on `@delivery.test`.
+Never used outside local development.

@@ -69,8 +69,8 @@ begin
   insert into public.notifications (recipient_id, type, title, body)
   select p.id,
          'DELIVERY_AVAILABLE',
-         'New deliveries available',
-         'Open the app to see deliveries you can claim.'
+         'Шинэ хүргэлт нэмэгдлээ',
+         'Авах боломжтой хүргэлтүүдийг аппаас харна уу.'
   from public.profiles p
   where p.role = 'COURIER'
     and p.is_active

@@ -99,7 +99,7 @@ begin
 
   if v_old_courier is not null then
     perform private.notify(v_old_courier, 'DELIVERY_CANCELLED',
-      'Delivery cancelled', v_delivery.code || ' was cancelled: ' || v_reason, p_delivery_id);
+      'Хүргэлт цуцлагдлаа', v_delivery.code || ': ' || v_reason, p_delivery_id);
   end if;
 
   return v_delivery;

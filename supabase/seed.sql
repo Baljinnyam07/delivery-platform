@@ -38,7 +38,7 @@ returns void language sql as $$
                     json_build_object('sub', p_id, 'role', 'authenticated')::text, false);
 $$;
 
-select pg_temp.seed_user('00000000-0000-0000-0000-00000000a001', 'admin@delivery.test', 'ADMIN',   'Admin User',  '99000001');
+select pg_temp.seed_user('00000000-0000-0000-0000-00000000a001', 'admin@delivery.test', 'ADMIN',   'Админ',       '99000001');
 select pg_temp.seed_user('00000000-0000-0000-0000-00000000c001', 'bat@delivery.test',   'COURIER', 'Bat-Erdene',  '99110001');
 select pg_temp.seed_user('00000000-0000-0000-0000-00000000c002', 'saraa@delivery.test', 'COURIER', 'Saraa',       '99110002');
 select pg_temp.seed_user('00000000-0000-0000-0000-00000000c003', 'tuya@delivery.test',  'COURIER', 'Tuya',        '99110003');
@@ -48,14 +48,14 @@ select pg_temp.act_as('00000000-0000-0000-0000-00000000a001');
 
 insert into public.deliveries (id, customer_name, customer_phone, address, address_note, package_description, amount_due, scheduled_date)
 values
-  ('00000000-0000-0000-0000-0000000d0001', 'Enkhjargal', '88001101', 'Sukhbaatar district, 1st khoroo, Seoul St 21', 'Entrance 2, floor 5', 'Documents',      0,      current_date),
-  ('00000000-0000-0000-0000-0000000d0002', 'Ganbold',    '88001102', 'Khan-Uul district, 15th khoroo, Zaisan 7',     null,                  'Small box',      25000,  current_date),
-  ('00000000-0000-0000-0000-0000000d0003', 'Oyuunaa',    '88001103', 'Bayanzurkh district, 26th khoroo, Building 54', 'Call on arrival',    'Flowers',        45000,  current_date),
-  ('00000000-0000-0000-0000-0000000d0004', 'Temuulen',   '88001104', 'Chingeltei district, 4th khoroo, Building 12', null,                  'Electronics',    120000, current_date),
-  ('00000000-0000-0000-0000-0000000d0005', 'Nomin',      '88001105', 'Songinokhairkhan district, 20th khoroo, 3-41', null,                  'Clothes',        60000,  current_date),
-  ('00000000-0000-0000-0000-0000000d0006', 'Bilguun',    '88001106', 'Bayangol district, 3rd khoroo, Building 8',    'Office, 2nd floor',   'Food',           18000,  current_date),
-  ('00000000-0000-0000-0000-0000000d0007', 'Solongo',    '88001107', 'Sukhbaatar district, 8th khoroo, Building 30', null,                  'Cosmetics',      35000,  current_date + 1),
-  ('00000000-0000-0000-0000-0000000d0008', 'Munkh-Od',   '88001108', 'Khan-Uul district, 11th khoroo, Building 101', null,                  'Book',           15000,  current_date - 1);
+  ('00000000-0000-0000-0000-0000000d0001', 'Энхжаргал',  '88001101', 'СБД, 1-р хороо, Сөүлийн гудамж 21',      '2-р орц, 5 давхар',   'Бичиг баримт',      0,      current_date),
+  ('00000000-0000-0000-0000-0000000d0002', 'Ганболд',    '88001102', 'ХУД, 15-р хороо, Зайсан 7',              null,                  'Жижиг хайрцаг',      25000,  current_date),
+  ('00000000-0000-0000-0000-0000000d0003', 'Оюунаа',     '88001103', 'БЗД, 26-р хороо, 54-р байр',             'Ирэхээсээ өмнө залгана уу', 'Цэцэг',        45000,  current_date),
+  ('00000000-0000-0000-0000-0000000d0004', 'Тэмүүлэн',   '88001104', 'ЧД, 4-р хороо, 12-р байр',               null,                  'Электрон бараа',    120000, current_date),
+  ('00000000-0000-0000-0000-0000000d0005', 'Номин',      '88001105', 'СХД, 20-р хороо, 3-41',                  null,                  'Хувцас',        60000,  current_date),
+  ('00000000-0000-0000-0000-0000000d0006', 'Билгүүн',    '88001106', 'БГД, 3-р хороо, 8-р байр',               'Оффис, 2 давхар',     'Хоол',           18000,  current_date),
+  ('00000000-0000-0000-0000-0000000d0007', 'Солонго',    '88001107', 'СБД, 8-р хороо, 30-р байр',              null,                  'Гоо сайхан',      35000,  current_date + 1),
+  ('00000000-0000-0000-0000-0000000d0008', 'Мөнх-Од',    '88001108', 'ХУД, 11-р хороо, 101-р байр',            null,                  'Ном',           15000,  current_date - 1);
 
 -- Admin assignments
 select public.assign_delivery('00000000-0000-0000-0000-0000000d0002', '00000000-0000-0000-0000-00000000c001');
@@ -81,7 +81,7 @@ select public.complete_delivery('00000000-0000-0000-0000-0000000d0008');
 
 -- Admin cancels one
 select pg_temp.act_as('00000000-0000-0000-0000-00000000a001');
-select public.cancel_delivery('00000000-0000-0000-0000-0000000d0007', 'Customer cancelled the order');
+select public.cancel_delivery('00000000-0000-0000-0000-0000000d0007', 'Захиалагч захиалгаа цуцалсан');
 
 -- Remaining UNASSIGNED: d0001, d0006
 select set_config('request.jwt.claims', '', false);

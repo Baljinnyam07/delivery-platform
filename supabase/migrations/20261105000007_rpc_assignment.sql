@@ -95,7 +95,7 @@ declare
   v_uid      uuid := private.assert_courier();
   v_delivery public.deliveries;
 begin
-  perform private.set_status_note('Claimed by courier');
+  perform private.set_status_note(null);
 
   update public.deliveries
      set status = 'ASSIGNED', courier_id = v_uid, assigned_at = now()
@@ -128,7 +128,7 @@ declare
   v_delivery public.deliveries;
 begin
   perform private.assert_target_courier(p_courier_id);
-  perform private.set_status_note('Assigned by admin');
+  perform private.set_status_note(null);
 
   update public.deliveries
      set status = 'ASSIGNED', courier_id = p_courier_id, assigned_at = now()
@@ -144,7 +144,7 @@ begin
   values (p_delivery_id, p_courier_id, 'ASSIGNED', v_uid);
 
   perform private.notify(p_courier_id, 'DELIVERY_ASSIGNED',
-    'New delivery assigned', v_delivery.code || ' · ' || v_delivery.address, p_delivery_id);
+    'Шинэ хүргэлт оноогдлоо', v_delivery.code || ' · ' || v_delivery.address, p_delivery_id);
 
   return v_delivery;
 end;
@@ -198,9 +198,9 @@ begin
     (p_delivery_id, p_courier_id, 'REASSIGNED', v_old_courier, v_reason, v_uid);
 
   perform private.notify(v_old_courier, 'DELIVERY_REMOVED',
-    'Delivery reassigned', v_delivery.code || ' was reassigned: ' || v_reason, p_delivery_id);
+    'Хүргэлт өөр курьерт шилжлээ', v_delivery.code || ': ' || v_reason, p_delivery_id);
   perform private.notify(p_courier_id, 'DELIVERY_ASSIGNED',
-    'New delivery assigned', v_delivery.code || ' · ' || v_delivery.address, p_delivery_id);
+    'Шинэ хүргэлт оноогдлоо', v_delivery.code || ' · ' || v_delivery.address, p_delivery_id);
 
   return v_delivery;
 end;
@@ -240,7 +240,7 @@ begin
   returning * into v_delivery;
 
   perform private.notify(v_old_courier, 'DELIVERY_REMOVED',
-    'Delivery removed', v_delivery.code || ' was unassigned: ' || v_reason, p_delivery_id);
+    'Хүргэлт таниас хасагдлаа', v_delivery.code || ': ' || v_reason, p_delivery_id);
 
   return v_delivery;
 end;
@@ -273,7 +273,7 @@ begin
   end if;
 
   perform private.close_active_assignment(p_delivery_id, 'RETURNED', v_reason);
-  perform private.set_status_note('Returned by courier: ' || v_reason);
+  perform private.set_status_note(v_reason);
 
   update public.deliveries
      set status = 'UNASSIGNED', courier_id = null, assigned_at = null

@@ -505,7 +505,7 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 |---|---|---|
 | **0** ✅ | Monorepo, workspace, docs | Approved architecture |
 | **1** ✅ | Supabase: migrations, RLS, RPCs, triggers, seed | pgTAP tests pass, incl. concurrency test |
-| **2** | `@delivery/shared`: generated types, enums, status map, zod schemas, error map | Typecheck passes |
+| **2** ✅ | `@delivery/shared`: generated types, enums, status map, zod schemas, error map | Typecheck + Vitest pass; DB↔shared sync tests |
 | **3** | Admin: scaffold, design tokens, auth, shell, deliveries CRUD + assign/reassign | Create → assign → reassign works end-to-end |
 | **4** | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct |
 | **5** | Courier: scaffold, auth, my/available/history, detail, claim, status, payment, Maps | Full flow on a real device (dev build) |
@@ -556,7 +556,8 @@ Approved on 2026-11-05.
 | D5 | Available push | Push to all active couriers when a delivery becomes available, with throttling (Section 9). |
 | D6 | ASSIGNED color | `#2563EB` |
 | D7 | Locale | Currency MNT, time zone `Asia/Ulaanbaatar`. |
-| D8 | Dependencies | `zod`, `@supabase/ssr`, `expo-secure-store` approved. |
+| D8 | Dependencies | `zod`, `@supabase/ssr`, `expo-secure-store` approved. Dev-only: `typescript`, `vitest` (testing strategy), `supabase` CLI. |
+| D9 | UI language | Mongolian for all user-facing text (labels, errors, notifications). Code, comments and docs stay in English. |
 
 Standing rules:
 - Preserve complete assignment and return history (no deletes, closed rows only).

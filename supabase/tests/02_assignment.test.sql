@@ -78,7 +78,7 @@ select results_eq(
   'return is kept in assignment history with reason');
 select is((select note from public.delivery_status_history
            where delivery_id = 'dddddddd-0000-0000-0000-000000000001' and to_status = 'UNASSIGNED' and from_status = 'ASSIGNED'),
-  'Returned by courier: Car broke down',
+  'Car broke down',
   'return reason is recorded in status history');
 
 -- ================= reassign =================

@@ -1,7 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    // Runs in Node, browsers and React Native: no Node or DOM APIs.
+    "lib": ["ES2022"],
+    "types": []
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Tests run under Vitest (Node) and may use node:* modules.
+  "exclude": ["src/__tests__"]
 }

@@ -1,5 +1,6 @@
 import {
   PAYMENT_METHOD_LABELS,
+  canRecordPayment,
   formatDate,
   formatDateTime,
   formatMNT,
@@ -15,6 +16,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { DeliveryDetailActions } from "@/features/deliveries/components/delivery-detail-actions";
 import { DeliveryStatusBadge, PaymentStatusBadge } from "@/features/deliveries/components/status-badge";
 import { getDeliveryDetail, listCouriers } from "@/features/deliveries/queries";
+import { RecordPaymentButton, VoidPaymentButton } from "@/features/payments/payment-dialogs";
 import { buildTimeline, TONE_COLOR } from "@/features/deliveries/timeline";
 
 export const metadata: Metadata = { title: "Хүргэлт" };
@@ -112,7 +114,22 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
             </dl>
           </Card>
 
-          <Card title="Төлбөр">
+          <Card
+            title="Төлбөр"
+            action={
+              canRecordPayment({
+                status: d.status,
+                paymentStatus: d.payment_status,
+                amountDue: d.amount_due,
+                role: "ADMIN",
+                isOwnDelivery: false,
+              }) ? (
+                <RecordPaymentButton delivery={d} />
+              ) : activePayment ? (
+                <VoidPaymentButton payment={{ id: activePayment.id, amount: activePayment.amount, code: d.code }} />
+              ) : null
+            }
+          >
             <dl className="divide-y">
               <Row label="Төлөх дүн">
                 <span className="tabular font-medium">{formatMNT(d.amount_due)}</span>

@@ -3,7 +3,7 @@
 Delivery management for small and medium-sized delivery businesses:
 an admin web app and a courier mobile app on top of Supabase.
 
-> Status: **Phase 3 — admin deliveries ready** (login, deliveries list/detail, create/edit, assign/reassign/unassign/cancel, realtime). See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+> Status: **Phase 4 — admin app complete** (dashboard, deliveries, couriers, payments, reports). Next: courier mobile app. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Workspace
 
@@ -42,7 +42,7 @@ pnpm dev:admin      # Next.js admin → http://localhost:3000 (needs apps/admin/
 pnpm dev:courier    # Expo courier app (Phase 5)
 ```
 
-Admin env: copy `apps/admin/.env.example` to `apps/admin/.env.local` and fill it from `pnpm supabase status -o env`.
+Admin env: copy `apps/admin/.env.example` to `apps/admin/.env.local` and fill it from `pnpm supabase status -o env` (`API_URL`, `PUBLISHABLE_KEY`, and the server-only `SECRET_KEY`).
 
 Local ports use 553xx to avoid clashing with other local Supabase projects.
 

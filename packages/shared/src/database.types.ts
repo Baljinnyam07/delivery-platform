@@ -329,6 +329,19 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"get_courier_stats":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "assigned_now": number,"avg_delivery_minutes": number,"cash_collected": number,"courier_id": string,"delivered_count": number,"full_name": string,"in_progress_now": number,"is_active": boolean,"phone": string,"transfer_collected": number
+            }[]
+                           },
+"get_daily_report":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "cancelled": number,"cash": number,"created": number,"day": string,"delivered": number,"transfer": number
+            }[]
+                           },
+"get_dashboard_stats":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
 "list_available_deliveries":
 { Args: Record<PropertyKey, never>; Returns: {
               "address": string,"address_note": string,"amount_due": number,"code": string,"created_at": string,"id": string,"latitude": number,"longitude": number,"package_description": string,"scheduled_date": string

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  addDays,
+  isIsoDate,
+  startOfMonth,
+  ubDayRange,
   formatDate,
   formatDateTime,
   formatMNT,
@@ -31,6 +35,29 @@ describe("Ulaanbaatar time (UTC+8)", () => {
   it("rolls over to the next day after 16:00 UTC", () => {
     expect(todayInUlaanbaatar(new Date("2026-11-05T15:59:00Z"))).toBe("2026-11-05");
     expect(todayInUlaanbaatar(new Date("2026-11-05T16:00:00Z"))).toBe("2026-11-06");
+  });
+});
+
+describe("UB day ranges", () => {
+  it("builds half-open ranges in +08:00", () => {
+    expect(ubDayRange("2026-11-05")).toEqual({
+      from: "2026-11-05T00:00:00+08:00",
+      to: "2026-11-06T00:00:00+08:00",
+    });
+    expect(ubDayRange("2026-12-01", "2026-12-31").to).toBe("2027-01-01T00:00:00+08:00");
+  });
+
+  it("does calendar arithmetic across months and leap years", () => {
+    expect(addDays("2028-02-28", 1)).toBe("2028-02-29");
+    expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
+    expect(startOfMonth("2026-11-05")).toBe("2026-11-01");
+  });
+
+  it("validates ISO dates", () => {
+    expect(isIsoDate("2026-11-05")).toBe(true);
+    expect(isIsoDate("2026-13-01")).toBe(false);
+    expect(isIsoDate("05.11.2026")).toBe(false);
+    expect(isIsoDate(undefined)).toBe(false);
   });
 });
 

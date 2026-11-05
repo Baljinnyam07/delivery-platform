@@ -450,8 +450,9 @@ Google Maps: `https://www.google.com/maps/dir/?api=1&destination=<lat,lng | enco
 | `cancel_delivery(delivery_id, reason)` | admin | delivery |
 | `void_payment(payment_id, reason)` | admin | payment_record |
 | `set_courier_active(courier_id, active)` | admin | profile (blocks deactivation while courier has active deliveries) |
-| `get_dashboard_stats(from, to)` | admin | KPI json *(Phase 4)* |
-| `get_courier_stats(from, to)` | admin | per-courier rows *(Phase 4)* |
+| `get_dashboard_stats(from, to)` | admin | KPI json (period counts, current snapshot, outstanding unpaid, collections) |
+| `get_courier_stats(from, to)` | admin | per-courier load, delivered, avg time, cash / transfer collected |
+| `get_daily_report(from_date, to_date)` | admin | one row per Ulaanbaatar calendar day (≤ 366 days) |
 
 Direct writes allowed: admin `insert`/`update` (descriptive columns) on `deliveries`; own profile fields (`full_name`, `phone`, `expo_push_token`); own notifications (`read_at` only).
 
@@ -507,7 +508,7 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 | **1** ✅ | Supabase: migrations, RLS, RPCs, triggers, seed | pgTAP tests pass, incl. concurrency test |
 | **2** ✅ | `@delivery/shared`: generated types, enums, status map, zod schemas, error map | Typecheck + Vitest pass; DB↔shared sync tests |
 | **3** ✅ | Admin: scaffold, design tokens, auth, shell, deliveries CRUD + assign/reassign | Create → assign → reassign works end-to-end (verified in browser, incl. realtime) |
-| **4** | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct |
+| **4** ✅ | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct (verified in browser + pgTAP) |
 | **5** | Courier: scaffold, auth, my/available/history, detail, claim, status, payment, Maps | Full flow on a real device (dev build) |
 | **6** | Notifications: push token, Edge Function, Realtime | Push received on assign/reassign |
 | **7** | Hardening: error/empty/loading states, Vercel deploy, EAS build, pilot | Pilot with real couriers |
@@ -553,7 +554,17 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 - Dialog/sheet bodies unmount on close: each open starts with fresh state, and a realtime refresh never overwrites what the admin is typing.
 - `idSchema` uses `z.guid()` (any Postgres uuid); `z.uuid()` rejected the non-RFC seed ids.
 - Latitude/longitude are not in the admin form yet (Maps falls back to the address text).
-- `/` redirects to `/deliveries` until the dashboard (Phase 4).
+- ~~`/` redirects to `/deliveries` until the dashboard~~ — dashboard shipped in Phase 4.
+
+## Implementation Notes (Phase 4)
+
+- **Service role usage** (`lib/supabase/admin.ts`, server-only, always after `getCurrentAdmin()`): create courier accounts, admin password reset for couriers, read a courier's email. Nothing else.
+- **Profile creation fix** (migration 0012): GoTrue's admin `createUser` inserts the user first and sets `app_metadata.role` in a follow-up UPDATE, so the profile trigger now also fires on that UPDATE. It only ever creates a missing profile and never changes an existing role. `createCourier` additionally deletes the auth user if no profile appeared.
+- **"Cash held"** = non-voided CASH payments recorded by the courier in the selected period. A real handover workflow is post-MVP.
+- **Periods** are inclusive Ulaanbaatar calendar days in the UI, converted to half-open `[from, to)` timestamptz ranges (`ubDayRange`).
+- **Reports:** single-series daily bar chart (no chart library) with the same data as a table; CSV export of deliveries created in the period (UTF-8 BOM for Excel, formula-injection safe).
+- **Payments list** shows at most 200 records per period (narrow the period for more).
+- `pnpm db:types` writes atomically and refuses empty output, so a stopped database can't wipe the types file.
 
 ## Approved Decisions
 

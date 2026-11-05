@@ -64,6 +64,34 @@ export function todayInUlaanbaatar(now: Date = new Date()): string {
   return `${p.year}-${p.month}-${p.day}`;
 }
 
+// -------------------------------------------------------------
+// Calendar-day ranges in Ulaanbaatar time. Mongolia has no DST
+// (fixed UTC+8), so a day is always [YYYY-MM-DDT00:00+08:00, +1 day).
+// -------------------------------------------------------------
+const UB_OFFSET = "+08:00";
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function isIsoDate(value: unknown): value is string {
+  return typeof value === "string" && DATE_RE.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+}
+
+/** "2026-11-05" + 1 → "2026-11-06" (pure calendar arithmetic). */
+export function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** First day of the month of `date` → "2026-11-01". */
+export function startOfMonth(date: string): string {
+  return `${date.slice(0, 7)}-01`;
+}
+
+/** Inclusive calendar days [from, to] → half-open timestamptz range for RPCs. */
+export function ubDayRange(from: string, to: string = from): { from: string; to: string } {
+  return { from: `${from}T00:00:00${UB_OFFSET}`, to: `${addDays(to, 1)}T00:00:00${UB_OFFSET}` };
+}
+
 /** "99112233" → "9911 2233" for display. */
 export function formatPhone(phone: string | null | undefined): string {
   if (!phone) return "";

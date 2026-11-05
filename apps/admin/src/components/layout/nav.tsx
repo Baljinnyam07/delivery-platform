@@ -1,15 +1,19 @@
 "use client";
 
-import { PackageIcon, type LucideIcon } from "lucide-react";
+import { BarChart3Icon, LayoutDashboardIcon, PackageIcon, UsersIcon, WalletIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; badge?: "unassigned" };
 
-// Only implemented sections are listed. Dashboard, couriers, payments and
-// reports are added in Phase 4.
-const NAV: NavItem[] = [{ href: "/deliveries", label: "Хүргэлтүүд", icon: PackageIcon, badge: "unassigned" }];
+const NAV: NavItem[] = [
+  { href: "/", label: "Хянах самбар", icon: LayoutDashboardIcon },
+  { href: "/deliveries", label: "Хүргэлтүүд", icon: PackageIcon, badge: "unassigned" },
+  { href: "/couriers", label: "Курьерууд", icon: UsersIcon },
+  { href: "/payments", label: "Төлбөр", icon: WalletIcon },
+  { href: "/reports", label: "Тайлан", icon: BarChart3Icon },
+];
 
 export function Nav({ unassignedCount, onNavigate }: { unassignedCount: number; onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -18,7 +22,8 @@ export function Nav({ unassignedCount, onNavigate }: { unassignedCount: number; 
     <nav className="space-y-1">
       <p className="px-3 pb-2 text-xs font-medium text-muted-foreground">Үндсэн цэс</p>
       {NAV.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const active =
+          item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (
           <Link

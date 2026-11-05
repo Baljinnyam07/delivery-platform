@@ -12,7 +12,9 @@ export const MSG = {
   passwordShort: "Нууц үг хамгийн багадаа 8 тэмдэгт.",
 } as const;
 
-export const idSchema = z.uuid(MSG.invalidId);
+// Any 8-4-4-4-12 hex id, exactly like Postgres `uuid` (z.uuid() would reject
+// non-RFC ids such as the seed data ids).
+export const idSchema = z.guid(MSG.invalidId);
 
 export const requiredText = (max: number) =>
   z.string(MSG.required).trim().min(1, MSG.required).max(max, MSG.tooLong(max));

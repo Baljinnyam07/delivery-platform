@@ -83,7 +83,7 @@ delivery-platform/
 │   │   │   │       ├── server.ts      # SSR client (user session)
 │   │   │   │       ├── browser.ts     # browser client (realtime only)
 │   │   │   │       └── admin.ts       # service role — `import "server-only"`
-│   │   │   └── middleware.ts          # session refresh + role gate
+│   │   │   └── proxy.ts               # Next 16 proxy (was middleware): session refresh + sign-in redirect
 │   │   └── package.json               # name: "admin"
 │   │
 │   └── courier/                       # Expo + Expo Router
@@ -506,7 +506,7 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 | **0** ✅ | Monorepo, workspace, docs | Approved architecture |
 | **1** ✅ | Supabase: migrations, RLS, RPCs, triggers, seed | pgTAP tests pass, incl. concurrency test |
 | **2** ✅ | `@delivery/shared`: generated types, enums, status map, zod schemas, error map | Typecheck + Vitest pass; DB↔shared sync tests |
-| **3** | Admin: scaffold, design tokens, auth, shell, deliveries CRUD + assign/reassign | Create → assign → reassign works end-to-end |
+| **3** ✅ | Admin: scaffold, design tokens, auth, shell, deliveries CRUD + assign/reassign | Create → assign → reassign works end-to-end (verified in browser, incl. realtime) |
 | **4** | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct |
 | **5** | Courier: scaffold, auth, my/available/history, detail, claim, status, payment, Maps | Full flow on a real device (dev build) |
 | **6** | Notifications: push token, Edge Function, Realtime | Push received on assign/reassign |
@@ -542,6 +542,18 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 | Time zones | Store `timestamptz`; display in business time zone (config constant). |
 
 ---
+
+## Implementation Notes (Phase 3)
+
+- Next.js 16: `src/proxy.ts` replaces `middleware.ts`. It only refreshes the session and redirects signed-out users; the ADMIN check runs in `lib/auth.ts` (`getCurrentAdmin`) and again in RLS/RPCs.
+- `cacheComponents` is **off**: every admin page is per-user and dynamic, so plain dynamic rendering is simpler.
+- shadcn/ui: Radix base, `radix-nova` style, recolored with our tokens in `globals.css`. Toasts use the shadcn `sonner` component (light only, no `next-themes`).
+- Inter is loaded with the `cyrillic` subset (Mongolian).
+- The create form sends a client-generated id, so a double submit is idempotent.
+- Dialog/sheet bodies unmount on close: each open starts with fresh state, and a realtime refresh never overwrites what the admin is typing.
+- `idSchema` uses `z.guid()` (any Postgres uuid); `z.uuid()` rejected the non-RFC seed ids.
+- Latitude/longitude are not in the admin form yet (Maps falls back to the address text).
+- `/` redirects to `/deliveries` until the dashboard (Phase 4).
 
 ## Approved Decisions
 

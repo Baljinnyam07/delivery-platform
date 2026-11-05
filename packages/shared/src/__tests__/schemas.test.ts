@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { courierCreateSchema, loginSchema } from "../schemas/auth";
-import { phoneSchema, reasonSchema } from "../schemas/common";
+import { idSchema, phoneSchema, reasonSchema } from "../schemas/common";
 import { deliveryCreateSchema, deliveryUpdateSchema, reassignDeliverySchema } from "../schemas/delivery";
 import { recordPaymentSchema } from "../schemas/payment";
 
@@ -79,6 +79,14 @@ describe("deliveryUpdateSchema", () => {
     expect(deliveryUpdateSchema.parse({ notes: "Оффисын ресепшнд үлдээх" })).toEqual({
       notes: "Оффисын ресепшнд үлдээх",
     });
+  });
+});
+
+describe("idSchema", () => {
+  it("accepts any Postgres uuid, including non-RFC seed ids", () => {
+    expect(idSchema.parse("00000000-0000-0000-0000-00000000c003")).toBe("00000000-0000-0000-0000-00000000c003");
+    expect(idSchema.parse(ID)).toBe(ID);
+    expect(idSchema.safeParse("not-an-id").success).toBe(false);
   });
 });
 

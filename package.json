@@ -1,0 +1,11 @@
+{
+  "name": "delivery-platform",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev:admin": "pnpm --filter admin dev",
+    "dev:courier": "pnpm --filter courier start",
+    "build:admin": "pnpm --filter admin build",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

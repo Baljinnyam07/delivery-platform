@@ -7,9 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "mn.delivery.courier"
     },
     "android": {
+      "package": "mn.delivery.courier",
       "adaptiveIcon": {
         "backgroundColor": "#2563EB",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -36,6 +38,17 @@
     "scheme": "courier",
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "9302e9c4-365b-443d-963b-35015463e470"
+      }
+    },
+    "owner": "baljinnyam_3"
   }
 }

@@ -12,8 +12,10 @@ import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { tint } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 import type { CourierOption } from "../queries";
+import { STATUS_COLOR, STATUS_TEXT } from "./status-badge";
 
 type Props = {
   counts: Record<DeliveryStatus | "ALL", number>;
@@ -59,30 +61,40 @@ export function DeliveriesToolbar({ counts, couriers }: Props) {
     <div className="space-y-3" data-pending={pending || undefined}>
       {/* Status segments */}
       <div className="-mx-1 overflow-x-auto px-1">
-        <div role="tablist" aria-label="Төлөвөөр шүүх" className="inline-flex gap-1 rounded-lg border bg-card p-1">
+        <div role="tablist" aria-label="Төлөвөөр шүүх" className="inline-flex gap-1 rounded-lg neon-panel p-1">
           {TABS.map((tab) => {
             const active = status === tab;
             const label = tab === "ALL" ? "Бүгд" : DELIVERY_STATUS_META[tab].label;
+            const color = tab === "ALL" ? null : STATUS_COLOR[tab];
+            // Active status tab takes its own hue; "Бүгд" stays ink.
+            const activeStyle =
+              active && color
+                ? { backgroundColor: tint(color, 14), color: STATUS_TEXT[tab as DeliveryStatus], boxShadow: `inset 0 0 0 1px ${tint(color, 25)}` }
+                : undefined;
             return (
               <button
                 key={tab}
                 role="tab"
                 aria-selected={active}
                 onClick={() => update({ status: tab })}
+                style={activeStyle}
                 className={cn(
-                  "inline-flex h-8 items-center gap-2 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors",
-                  active ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  "inline-flex h-8 items-center gap-2 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors duration-(--dur-fast)",
+                  active
+                    ? color
+                      ? ""
+                      : "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                {tab !== "ALL" ? (
-                  <span
-                    className="size-1.5 rounded-full"
-                    style={{ backgroundColor: active ? "currentColor" : DELIVERY_STATUS_META[tab].color }}
-                    aria-hidden
-                  />
-                ) : null}
+                {color ? <span className="size-2 rounded-full" style={{ backgroundColor: color }} aria-hidden /> : null}
                 {label}
-                <span className={cn("tabular text-xs", active ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                <span
+                  className={cn(
+                    "tabular rounded px-1.5 text-xs",
+                    active ? (color ? "bg-black/40" : "text-primary-foreground/80") : "bg-muted text-muted-foreground",
+                  )}
+                >
                   {counts[tab]}
                 </span>
               </button>

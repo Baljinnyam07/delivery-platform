@@ -1,10 +1,17 @@
 "use client";
 
-import { availableActions, DELIVERY_ACTION_LABELS, formatDate, formatMNT, formatPhone } from "@delivery/shared";
+import {
+  availableActions,
+  DELIVERY_ACTION_LABELS,
+  formatDate,
+  formatMNT,
+  formatPhone,
+} from "@delivery/shared";
 import { InboxIcon, MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
+import { AvatarInitial } from "@/components/ui/avatar-initial";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,9 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import type { CourierOption, DeliveryListRow } from "../queries";
 import { DeliveryActionDialog, type ActionTarget, type DialogAction } from "./delivery-action-dialog";
-import { PaymentStatusBadge, DeliveryStatusBadge } from "./status-badge";
+import { PaymentStatusBadge, DeliveryStatusBadge, STATUS_COLOR } from "./status-badge";
 
 const DIALOG_ACTIONS: DialogAction[] = ["assign", "reassign", "unassign", "cancel"];
 
@@ -27,8 +35,8 @@ export function DeliveriesTable({ rows, couriers }: { rows: DeliveryListRow[]; c
   if (rows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-        <span className="flex size-10 items-center justify-center rounded-full bg-muted">
-          <InboxIcon className="size-5 text-muted-foreground" />
+        <span className="flex size-12 items-center justify-center rounded-2xl bg-neon-cyan/10 text-neon-cyan">
+          <InboxIcon className="size-5" />
         </span>
         <div className="space-y-1">
           <p className="text-sm font-medium">Хүргэлт олдсонгүй</p>
@@ -72,13 +80,14 @@ export function DeliveriesTable({ rows, couriers }: { rows: DeliveryListRow[]; c
               <TableRow
                 key={row.id}
                 className="cursor-pointer"
+                style={{ "--row-tone": STATUS_COLOR[row.status] } as CSSProperties}
                 onClick={(e) => {
                   if ((e.target as HTMLElement).closest("a,button,[role=menuitem]")) return;
                   router.push(href);
                 }}
               >
-                <TableCell className="pl-4 font-medium">
-                  <Link href={href} className="tabular hover:text-primary hover:underline">
+                <TableCell className="pl-4 font-medium shadow-[inset_3px_0_0_var(--row-tone)]">
+                  <Link href={href} className="tabular hover:text-link hover:underline">
                     {row.code}
                   </Link>
                 </TableCell>
@@ -95,7 +104,14 @@ export function DeliveriesTable({ rows, couriers }: { rows: DeliveryListRow[]; c
                   ) : null}
                 </TableCell>
                 <TableCell>
-                  {row.courier?.full_name ?? <span className="text-muted-foreground">—</span>}
+                  {row.courier ? (
+                    <span className="flex items-center gap-2">
+                      <AvatarInitial name={row.courier.full_name} seed={row.courier.id} className="size-6 text-[10px] ring-0" />
+                      {row.courier.full_name}
+                    </span>
+                  ) : (
+                    <span className="text-subtle-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <DeliveryStatusBadge status={row.status} />
@@ -107,7 +123,18 @@ export function DeliveriesTable({ rows, couriers }: { rows: DeliveryListRow[]; c
                     <span className="text-xs text-muted-foreground">Төлбөргүй</span>
                   )}
                 </TableCell>
-                <TableCell className="tabular text-right">{formatMNT(row.amount_due)}</TableCell>
+                <TableCell
+                  className={cn(
+                    "tabular text-right font-medium",
+                    row.amount_due === 0
+                      ? "text-subtle-foreground"
+                      : row.payment_status === "PAID"
+                        ? "text-neon-green"
+                        : "text-foreground",
+                  )}
+                >
+                  {formatMNT(row.amount_due)}
+                </TableCell>
                 <TableCell className="tabular text-muted-foreground">
                   {formatDate(row.scheduled_date ?? row.created_at)}
                 </TableCell>

@@ -1,56 +1,82 @@
 "use client";
 
-import { BarChart3Icon, LayoutDashboardIcon, PackageIcon, UsersIcon, WalletIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { NAV_GROUPS, isActive } from "./nav-config";
 
-type NavItem = { href: string; label: string; icon: LucideIcon; badge?: "unassigned" };
-
-const NAV: NavItem[] = [
-  { href: "/", label: "Хянах самбар", icon: LayoutDashboardIcon },
-  { href: "/deliveries", label: "Хүргэлтүүд", icon: PackageIcon, badge: "unassigned" },
-  { href: "/couriers", label: "Курьерууд", icon: UsersIcon },
-  { href: "/payments", label: "Төлбөр", icon: WalletIcon },
-  { href: "/reports", label: "Тайлан", icon: BarChart3Icon },
-];
-
-export function Nav({ unassignedCount, onNavigate }: { unassignedCount: number; onNavigate?: () => void }) {
+export function Nav({
+  unassignedCount,
+  collapsed = false,
+  onNavigate,
+}: {
+  unassignedCount: number;
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
-    <nav className="space-y-1">
-      <p className="px-3 pb-2 text-xs font-medium text-muted-foreground">Үндсэн цэс</p>
-      {NAV.map((item) => {
-        const active =
-          item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
+    <nav className="space-y-5">
+      {NAV_GROUPS.map((group) => (
+        <div key={group.label} className="space-y-0.5">
+          <p
             className={cn(
-              "flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
-              active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-foreground/80 hover:bg-muted hover:text-foreground",
+              "px-3 pb-1.5 text-[11px] font-medium tracking-wide text-subtle-foreground uppercase transition-opacity",
+              collapsed && "sr-only",
             )}
           >
-            <Icon className="size-4" />
-            <span className="flex-1">{item.label}</span>
-            {item.badge === "unassigned" && unassignedCount > 0 ? (
-              <span
-                className="tabular rounded-full bg-status-unassigned/15 px-2 py-0.5 text-xs font-semibold text-slate-600"
-                title="Хуваарилаагүй хүргэлт"
+            {group.label}
+          </p>
+          {group.items.map((item) => {
+            const active = isActive(pathname, item.href);
+            const Icon = item.icon;
+            const count = item.badge === "unassigned" ? unassignedCount : 0;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
+                title={collapsed ? item.label : undefined}
+                className={cn(
+                  "group/nav relative flex h-9 items-center gap-3 rounded-lg text-[13.5px] font-medium transition-colors duration-(--dur-fast)",
+                  collapsed ? "justify-center px-0" : "px-3",
+                  active
+                    ? "bg-white/[0.06] text-foreground"
+                    : "text-foreground/65 hover:bg-white/[0.04] hover:text-foreground",
+                )}
               >
-                {unassignedCount}
-              </span>
-            ) : null}
-          </Link>
-        );
-      })}
+                {active ? (
+                  <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-neon-cyan shadow-[0_0_8px_var(--neon-cyan)]" aria-hidden />
+                ) : null}
+                <Icon className={cn("size-4 shrink-0", active ? "text-neon-cyan" : "text-foreground/45 group-hover/nav:text-foreground/80")} />
+                {collapsed ? (
+                  count > 0 ? (
+                    <span className="absolute top-1.5 right-2.5 size-1.5 rounded-full bg-neon-violet" aria-hidden />
+                  ) : null
+                ) : (
+                  <>
+                    <span className="flex-1 truncate">{item.label}</span>
+                    {count > 0 ? (
+                      <span
+                        className="tabular rounded-md bg-neon-violet/15 px-1.5 py-0.5 text-[11px] font-semibold text-[#D69BFF] group-hover/nav:hidden"
+                        title="Хуваарилаагүй хүргэлт"
+                      >
+                        {count}
+                      </span>
+                    ) : null}
+                    <span className="hidden items-center gap-0.5 group-hover/nav:flex" aria-hidden>
+                      <kbd className="kbd">G</kbd>
+                      <kbd className="kbd">{item.key.toUpperCase()}</kbd>
+                    </span>
+                  </>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
 }

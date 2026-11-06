@@ -1,19 +1,16 @@
 "use client";
 
 import { PlusIcon } from "lucide-react";
-import { useState } from "react";
+import { useShell } from "@/components/layout/shell-context";
 import { Button } from "@/components/ui/button";
-import { DeliveryFormSheet } from "./delivery-form-sheet";
 
+/** Opens the shell's single "new delivery" sheet (same one as the N shortcut). */
 export function NewDeliveryButton() {
-  const [open, setOpen] = useState(false);
+  const { openNewDelivery } = useShell();
   return (
-    <>
-      <Button onClick={() => setOpen(true)} className="h-9">
-        <PlusIcon />
-        Шинэ хүргэлт
-      </Button>
-      <DeliveryFormSheet open={open} onOpenChange={setOpen} />
-    </>
+    <Button onClick={openNewDelivery} className="h-9">
+      <PlusIcon />
+      Шинэ хүргэлт
+    </Button>
   );
 }

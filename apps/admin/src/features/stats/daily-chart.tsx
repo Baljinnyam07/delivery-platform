@@ -57,7 +57,7 @@ export function DailyDeliveredChart({ days }: { days: Day[] }) {
                 >
                   {/* hit target is the full column; mark is thin */}
                   <div
-                    className="w-full max-w-7 rounded-t-[4px] bg-primary transition-opacity group-hover:opacity-80 group-focus-visible:opacity-80"
+                    className="w-full max-w-7 rounded-t-[3px] bg-[linear-gradient(180deg,var(--neon-cyan),var(--neon-magenta))] transition-[filter] group-hover:brightness-125 group-focus-visible:brightness-125"
                     style={{ height: d.delivered > 0 ? `max(${h}%, 2px)` : 0 }}
                   />
                   <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-44 -translate-x-1/2 rounded-lg border bg-popover px-3 py-2 text-xs shadow-md group-hover:block group-focus-visible:block">

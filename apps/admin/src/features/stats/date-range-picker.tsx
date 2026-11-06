@@ -32,7 +32,7 @@ export function DateRangePicker({ from, to }: Props) {
 
   return (
     <div className="flex flex-wrap items-center gap-2" data-pending={pending || undefined}>
-      <div className="inline-flex rounded-lg border bg-card p-1">
+      <div className="inline-flex rounded-lg neon-panel p-1">
         {presets.map((p) => {
           const active = p.from === from && p.to === to;
           return (

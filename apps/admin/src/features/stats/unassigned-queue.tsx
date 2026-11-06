@@ -41,7 +41,7 @@ export function UnassignedQueue({ rows, couriers }: { rows: Row[]; couriers: Cou
           <li key={r.id} className="flex items-center gap-4 py-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 text-sm">
-                <Link href={`/deliveries/${r.id}`} className="tabular font-medium hover:text-primary hover:underline">
+                <Link href={`/deliveries/${r.id}`} className="tabular font-medium hover:text-link hover:underline">
                   {r.code}
                 </Link>
                 <span className="truncate text-muted-foreground">{r.customer_name}</span>

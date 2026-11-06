@@ -23,7 +23,7 @@ export const metadata: Metadata = { title: "Хүргэлт" };
 
 function Card({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   return (
-    <section className="rounded-xl border bg-card shadow-xs">
+    <section className="rounded-xl neon-panel">
       <div className="flex items-center justify-between border-b px-5 py-3.5">
         <h2 className="text-sm font-semibold">{title}</h2>
         {action}
@@ -90,7 +90,7 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
             <dl className="divide-y">
               <Row label="Харилцагч">{d.customer_name}</Row>
               <Row label="Утас">
-                <a href={`tel:${d.customer_phone}`} className="tabular hover:text-primary">
+                <a href={`tel:${d.customer_phone}`} className="tabular hover:text-link">
                   {formatPhone(d.customer_phone)}
                 </a>
               </Row>
@@ -100,7 +100,7 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
                   href={mapsUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 flex w-fit items-center gap-1 text-xs text-primary hover:underline"
+                  className="mt-1 flex w-fit items-center gap-1 text-xs text-link hover:underline"
                 >
                   Google Maps дээр харах
                   <ExternalLinkIcon className="size-3" />

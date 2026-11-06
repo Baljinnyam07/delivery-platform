@@ -310,9 +310,9 @@ export function CourierStatusBadge({ active }: { active: boolean }) {
   return (
     <span
       className="inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium"
-      style={active ? { backgroundColor: "#16A34A1A", color: "#15803D" } : { backgroundColor: "#94A3B81A", color: "#475569" }}
+      style={active ? { backgroundColor: "#39FF881F", color: "#93FFBE", boxShadow: "inset 0 0 0 1px #39FF8833" } : { backgroundColor: "#8F95C41A", color: "#8F95C4", boxShadow: "inset 0 0 0 1px #8F95C433" }}
     >
-      <span className="size-1.5 rounded-full" style={{ backgroundColor: active ? "#16A34A" : "#94A3B8" }} aria-hidden />
+      <span className="size-1.5 rounded-full" style={{ backgroundColor: active ? "#39FF88" : "#5D6294", boxShadow: active ? "0 0 6px #39FF88" : undefined }} aria-hidden />
       {active ? "Идэвхтэй" : "Идэвхгүй"}
     </span>
   );

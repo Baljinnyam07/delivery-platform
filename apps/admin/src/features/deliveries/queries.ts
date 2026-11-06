@@ -36,7 +36,7 @@ export function parseFilters(params: RawParams): DeliveryFilters {
 }
 
 /** PostgREST `or()` filter for the search box. Strips characters that would break the filter syntax. */
-function searchFilter(q: string): string | null {
+export function searchFilter(q: string): string | null {
   const term = q.replace(/[,()*%\\:"']/g, " ").replace(/\s+/g, " ").trim();
   if (!term) return null;
   const digits = term.replace(/[\s-]/g, "");

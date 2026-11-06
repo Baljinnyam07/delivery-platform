@@ -26,16 +26,28 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     error === "forbidden" ? "Зөвхөн админ эрхтэй хэрэглэгч нэвтрэх боломжтой." : undefined;
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
+      {/* One soft glow behind the card */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 left-1/2 size-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60 blur-3xl"
+        style={{ background: "radial-gradient(circle, #00e5ff1f 0%, #ff2bd60f 45%, transparent 70%)" }}
+      />
+
+      <div className="relative w-full max-w-sm animate-enter">
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <BrandMark className="size-10" />
+          <BrandMark className="size-11 rounded-xl" />
           <div className="space-y-1">
-            <h1 className="text-xl font-semibold tracking-tight">Админ нэвтрэх</h1>
+            <h1 className="font-display text-2xl font-bold">Админ нэвтрэх</h1>
             <p className="text-sm text-muted-foreground">Хүргэлтийн удирдлагын систем</p>
           </div>
         </div>
-        <div className="rounded-xl border bg-card p-6 shadow-xs">
+
+        <div className="relative rounded-2xl neon-panel p-6">
+          <span
+            aria-hidden
+            className="absolute inset-x-8 top-0 h-px bg-[linear-gradient(90deg,transparent,#00e5ff99,transparent)]"
+          />
           <LoginForm initialError={initialError} />
         </div>
       </div>

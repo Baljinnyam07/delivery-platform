@@ -1,11 +1,11 @@
-import { DELIVERY_STATUS_META, formatDate, formatMNT, formatTime, todayInUlaanbaatar } from "@delivery/shared";
-import { ArrowRightIcon } from "lucide-react";
+import { formatDate, formatMNT, formatTime, todayInUlaanbaatar } from "@delivery/shared";
+import { ArrowRightIcon, CircleDashedIcon, PackageCheckIcon, TruckIcon, UserCheckIcon, WalletIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, Kpi, KpiStrip } from "@/components/layout/card";
 import { PageHeader } from "@/components/layout/page-header";
+import { AvatarInitial } from "@/components/ui/avatar-initial";
 import { DeliveryStatusBadge } from "@/features/deliveries/components/status-badge";
-import { NewDeliveryButton } from "@/features/deliveries/components/new-delivery-button";
 import { listCouriers } from "@/features/deliveries/queries";
 import {
   getCourierStats,
@@ -13,6 +13,7 @@ import {
   getRecentActivity,
   getUnassignedQueue,
 } from "@/features/stats/queries";
+import { NEON, STATUS_COLOR } from "@/lib/neon";
 import { UnassignedQueue } from "@/features/stats/unassigned-queue";
 
 export const metadata: Metadata = { title: "Хянах самбар" };
@@ -34,7 +35,6 @@ export default async function DashboardPage() {
       <PageHeader
         title="Хянах самбар"
         description={`Өнөөдөр · ${formatDate(new Date())}`}
-        actions={<NewDeliveryButton />}
       />
 
       <div className="space-y-6">
@@ -43,33 +43,39 @@ export default async function DashboardPage() {
             label="Хуваарилаагүй"
             value={stats.unassigned_now}
             hint={stats.unassigned_now > 0 ? "Хуваарилах шаардлагатай" : "Бүгд хуваарилагдсан"}
-            accent={DELIVERY_STATUS_META.UNASSIGNED.color}
+            accent={STATUS_COLOR.UNASSIGNED}
+            icon={CircleDashedIcon}
             href="/deliveries?status=UNASSIGNED"
           />
           <Kpi
             label="Хуваарилсан"
             value={stats.assigned_now}
             hint="Эхлээгүй байгаа"
-            accent={DELIVERY_STATUS_META.ASSIGNED.color}
+            accent={STATUS_COLOR.ASSIGNED}
+            icon={UserCheckIcon}
             href="/deliveries?status=ASSIGNED"
           />
           <Kpi
             label="Хүргэж байна"
             value={stats.in_progress_now}
             hint="Замд яваа"
-            accent={DELIVERY_STATUS_META.IN_PROGRESS.color}
+            accent={STATUS_COLOR.IN_PROGRESS}
+            icon={TruckIcon}
             href="/deliveries?status=IN_PROGRESS"
           />
           <Kpi
             label="Өнөөдөр хүргэгдсэн"
             value={stats.delivered}
             hint={`Өнөөдөр бүртгэсэн: ${stats.created}`}
-            accent={DELIVERY_STATUS_META.DELIVERED.color}
+            accent={STATUS_COLOR.DELIVERED}
+            icon={PackageCheckIcon}
           />
           <Kpi
             label="Төлөгдөөгүй"
             value={formatMNT(stats.unpaid_amount)}
             hint={`${stats.unpaid_count} хүргэлт`}
+            accent={NEON.magenta}
+            icon={WalletIcon}
             href="/deliveries?payment=UNPAID"
           />
         </KpiStrip>
@@ -82,7 +88,7 @@ export default async function DashboardPage() {
               queue.total > queue.rows.length ? (
                 <Link
                   href="/deliveries?status=UNASSIGNED"
-                  className="flex items-center gap-1 text-sm text-primary hover:underline"
+                  className="flex items-center gap-1 text-sm text-link hover:underline"
                 >
                   Бүгдийг харах
                   <ArrowRightIcon className="size-4" />
@@ -97,7 +103,7 @@ export default async function DashboardPage() {
             title="Курьерууд"
             description="Өнөөдрийн ачаалал"
             action={
-              <Link href="/couriers" className="text-sm text-primary hover:underline">
+              <Link href="/couriers" className="text-sm text-link hover:underline">
                 Дэлгэрэнгүй
               </Link>
             }
@@ -110,11 +116,9 @@ export default async function DashboardPage() {
                   const active = c.assigned_now + c.in_progress_now;
                   return (
                     <li key={c.courier_id} className="flex items-center gap-3 py-3">
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                        {c.full_name.slice(0, 1)}
-                      </span>
+                      <AvatarInitial name={c.full_name} seed={c.courier_id} />
                       <div className="min-w-0 flex-1">
-                        <Link href={`/couriers/${c.courier_id}`} className="block truncate text-sm font-medium hover:text-primary">
+                        <Link href={`/couriers/${c.courier_id}`} className="block truncate text-sm font-medium hover:text-link">
                           {c.full_name}
                         </Link>
                         <p className="text-xs text-muted-foreground">
@@ -141,7 +145,7 @@ export default async function DashboardPage() {
               {activity.map((a) => (
                 <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5 text-sm">
                   <span className="tabular w-12 text-muted-foreground">{formatTime(a.created_at)}</span>
-                  <Link href={`/deliveries/${a.delivery_id}`} className="tabular font-medium hover:text-primary hover:underline">
+                  <Link href={`/deliveries/${a.delivery_id}`} className="tabular font-medium hover:text-link hover:underline">
                     {a.delivery?.code}
                   </Link>
                   {a.from_status ? (

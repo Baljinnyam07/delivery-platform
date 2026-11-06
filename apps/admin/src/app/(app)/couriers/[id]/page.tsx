@@ -66,7 +66,7 @@ export default async function CourierDetailPage({ params, searchParams }: PagePr
             <ul className="divide-y">
               {detail.active.map((d) => (
                 <li key={d.id} className="flex flex-wrap items-center gap-3 px-5 py-3 text-sm">
-                  <Link href={`/deliveries/${d.id}`} className="tabular w-24 font-medium hover:text-primary hover:underline">
+                  <Link href={`/deliveries/${d.id}`} className="tabular w-24 font-medium hover:text-link hover:underline">
                     {d.code}
                   </Link>
                   <span className="min-w-0 flex-1 truncate">
@@ -88,7 +88,7 @@ export default async function CourierDetailPage({ params, searchParams }: PagePr
               <ul className="divide-y">
                 {detail.finished.map((d) => (
                   <li key={d.id} className="flex items-center gap-3 px-5 py-3 text-sm">
-                    <Link href={`/deliveries/${d.id}`} className="tabular w-24 font-medium hover:text-primary hover:underline">
+                    <Link href={`/deliveries/${d.id}`} className="tabular w-24 font-medium hover:text-link hover:underline">
                       {d.code}
                     </Link>
                     <span className="min-w-0 flex-1 truncate text-muted-foreground">
@@ -109,7 +109,7 @@ export default async function CourierDetailPage({ params, searchParams }: PagePr
               <ul className="divide-y">
                 {detail.payments.map((p) => (
                   <li key={p.id} className={`flex items-center gap-3 px-5 py-3 text-sm ${p.voided_at ? "text-muted-foreground line-through" : ""}`}>
-                    <Link href={`/deliveries/${p.delivery?.id}`} className="tabular w-24 font-medium hover:text-primary hover:underline">
+                    <Link href={`/deliveries/${p.delivery?.id}`} className="tabular w-24 font-medium hover:text-link hover:underline">
                       {p.delivery?.code}
                     </Link>
                     <span className="flex-1 text-muted-foreground">

@@ -25,7 +25,7 @@ export const statusColor = {
 
 // Darker text shades of the same hues (yellow on white fails contrast).
 export const statusText: Record<string, string> = {
-  UNASSIGNED: "#475569",
+  UNASSIGNED: "#6D28D9",
   ASSIGNED: "#1D4ED8",
   IN_PROGRESS: "#A16207",
   DELIVERED: "#15803D",

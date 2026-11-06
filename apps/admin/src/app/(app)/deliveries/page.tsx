@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/page-header";
 import { DeliveriesTable } from "@/features/deliveries/components/deliveries-table";
 import { DeliveriesToolbar } from "@/features/deliveries/components/deliveries-toolbar";
-import { NewDeliveryButton } from "@/features/deliveries/components/new-delivery-button";
 import { Pagination } from "@/features/deliveries/components/pagination";
 import { listCouriers, listDeliveries, PAGE_SIZE, parseFilters } from "@/features/deliveries/queries";
 
@@ -18,12 +17,11 @@ export default async function DeliveriesPage({ searchParams }: PageProps<"/deliv
       <PageHeader
         title="Хүргэлтүүд"
         description="Бүх хүргэлтийг бүртгэх, хуваарилах, хянах."
-        actions={<NewDeliveryButton />}
       />
 
       <div className="space-y-4">
         <DeliveriesToolbar counts={counts} couriers={couriers} />
-        <div className="overflow-hidden rounded-xl border bg-card shadow-xs">
+        <div className="overflow-hidden rounded-xl neon-panel">
           <DeliveriesTable rows={rows} couriers={couriers} />
           {total > 0 ? <Pagination page={filters.page} pageSize={PAGE_SIZE} total={total} params={params} /> : null}
         </div>

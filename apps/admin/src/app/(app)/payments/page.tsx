@@ -58,7 +58,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
               <ul className="divide-y">
                 {cashHolders.map((c) => (
                   <li key={c.courier_id} className="flex items-center justify-between px-5 py-3 text-sm">
-                    <Link href={`/couriers/${c.courier_id}?from=${range.from}&to=${range.to}`} className="font-medium hover:text-primary hover:underline">
+                    <Link href={`/couriers/${c.courier_id}?from=${range.from}&to=${range.to}`} className="font-medium hover:text-link hover:underline">
                       {c.full_name}
                     </Link>
                     <span className="tabular font-medium">{formatMNT(c.cash_collected)}</span>
@@ -79,7 +79,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
               <ul className="divide-y">
                 {unpaid.rows.map((d) => (
                   <li key={d.id} className="flex items-center gap-3 px-5 py-3 text-sm">
-                    <Link href={`/deliveries/${d.id}`} className="tabular w-24 font-medium hover:text-primary hover:underline">
+                    <Link href={`/deliveries/${d.id}`} className="tabular w-24 font-medium hover:text-link hover:underline">
                       {d.code}
                     </Link>
                     <span className="min-w-0 flex-1 truncate text-muted-foreground">
@@ -124,7 +124,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
                   <TableRow key={p.id} className={p.voided_at ? "text-muted-foreground" : undefined}>
                     <TableCell className="tabular pl-5">{formatDateTime(p.recorded_at)}</TableCell>
                     <TableCell>
-                      <Link href={`/deliveries/${p.delivery?.id}`} className="tabular font-medium hover:text-primary hover:underline">
+                      <Link href={`/deliveries/${p.delivery?.id}`} className="tabular font-medium hover:text-link hover:underline">
                         {p.delivery?.code}
                       </Link>
                       <div className="text-xs text-muted-foreground">{p.delivery?.customer_name}</div>

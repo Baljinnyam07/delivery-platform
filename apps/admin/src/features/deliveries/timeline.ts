@@ -1,9 +1,9 @@
 import {
-  DELIVERY_STATUS_META,
   PAYMENT_METHOD_LABELS,
   formatMNT,
   type DeliveryStatus,
 } from "@delivery/shared";
+import { NEON, STATUS_COLOR } from "@/lib/neon";
 import type { DeliveryDetail } from "./queries";
 
 export type TimelineEvent = {
@@ -93,8 +93,8 @@ export function buildTimeline({ history, assignments, payments, people }: Delive
 }
 
 export const TONE_COLOR: Record<TimelineEvent["tone"], string> = {
-  ...Object.fromEntries(Object.entries(DELIVERY_STATUS_META).map(([k, v]) => [k, v.color])),
-  PAYMENT: "#16A34A",
-  VOID: "#DC2626",
-  NEUTRAL: "#64748B",
+  ...STATUS_COLOR,
+  PAYMENT: NEON.green,
+  VOID: NEON.red,
+  NEUTRAL: "#8F95C4",
 } as Record<TimelineEvent["tone"], string>;

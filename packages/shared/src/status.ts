@@ -12,7 +12,7 @@ export const DELIVERY_STATUS_META: Record<
   DeliveryStatus,
   { label: string; color: string }
 > = {
-  UNASSIGNED: { label: "Хуваарилаагүй", color: "#94A3B8" },
+  UNASSIGNED: { label: "Хуваарилаагүй", color: "#8B5CF6" },
   ASSIGNED: { label: "Хуваарилсан", color: "#2563EB" },
   IN_PROGRESS: { label: "Хүргэж байна", color: "#EAB308" },
   DELIVERED: { label: "Хүргэгдсэн", color: "#16A34A" },

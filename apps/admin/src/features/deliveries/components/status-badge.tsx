@@ -4,41 +4,53 @@ import {
   type DeliveryStatus,
   type PaymentStatus,
 } from "@delivery/shared";
+import { STATUS_COLOR, STATUS_TEXT } from "@/lib/neon";
 import { cn } from "@/lib/utils";
 
-// Text uses a darker shade of the same hue so labels stay readable
-// (e.g. #EAB308 on white fails contrast). Dot uses the exact token color.
-const TEXT: Record<DeliveryStatus | PaymentStatus, string> = {
-  UNASSIGNED: "#475569",
-  ASSIGNED: "#1D4ED8",
-  IN_PROGRESS: "#A16207",
-  DELIVERED: "#15803D",
-  CANCELLED: "#B91C1C",
-  PAID: "#15803D",
-  UNPAID: "#B91C1C",
-};
+export { STATUS_COLOR, STATUS_TEXT };
 
+/** Status pill: translucent fill, hairline in the hue, softly glowing dot. */
 function Pill({ label, color, text, className }: { label: string; color: string; text: string; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-xs font-medium",
+        "inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium whitespace-nowrap",
         className,
       )}
-      style={{ backgroundColor: `${color}1A`, color: text }}
+      style={{
+        backgroundColor: `${color}1F`,
+        color: text,
+        boxShadow: `inset 0 0 0 1px ${color}33`,
+      }}
     >
-      <span className="size-1.5 rounded-full" style={{ backgroundColor: color }} aria-hidden />
+      <span
+        className="size-1.5 rounded-full"
+        style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
+        aria-hidden
+      />
       {label}
     </span>
   );
 }
 
 export function DeliveryStatusBadge({ status, className }: { status: DeliveryStatus; className?: string }) {
-  const meta = DELIVERY_STATUS_META[status];
-  return <Pill label={meta.label} color={meta.color} text={TEXT[status]} className={className} />;
+  return (
+    <Pill
+      label={DELIVERY_STATUS_META[status].label}
+      color={STATUS_COLOR[status]}
+      text={STATUS_TEXT[status]}
+      className={className}
+    />
+  );
 }
 
 export function PaymentStatusBadge({ status, className }: { status: PaymentStatus; className?: string }) {
-  const meta = PAYMENT_STATUS_META[status];
-  return <Pill label={meta.label} color={meta.color} text={TEXT[status]} className={className} />;
+  return (
+    <Pill
+      label={PAYMENT_STATUS_META[status].label}
+      color={STATUS_COLOR[status]}
+      text={STATUS_TEXT[status]}
+      className={className}
+    />
+  );
 }

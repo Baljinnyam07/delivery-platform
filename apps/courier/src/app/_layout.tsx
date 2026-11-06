@@ -9,9 +9,13 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ErrorScreen } from "@/components/error-screen";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ToastProvider } from "@/lib/toast";
 import { colors, font } from "@/theme";
+
+// Any route that throws while rendering shows a friendly retry screen.
+export { ErrorScreen as ErrorBoundary };
 
 function RootNavigator() {
   const { session } = useAuth();

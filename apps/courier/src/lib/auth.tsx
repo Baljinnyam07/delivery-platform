@@ -17,14 +17,17 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+type LoadResult = { profile: CourierProfile | null; error: string | null; offline?: boolean };
+
 /** Loads the profile and enforces: only ACTIVE COURIER accounts may use the app. */
-async function loadCourier(userId: string): Promise<{ profile: CourierProfile | null; error: string | null }> {
+async function loadCourier(userId: string): Promise<LoadResult> {
   const { data, error } = await supabase
     .from("profiles")
     .select("id, full_name, phone, role, is_active")
     .eq("id", userId)
     .maybeSingle();
-  if (error) return { profile: null, error: "Холболтын алдаа. Дахин оролдоно уу." };
+  // A request error (no network, timeout) says nothing about the role.
+  if (error) return { profile: null, error: "Холболтын алдаа. Дахин оролдоно уу.", offline: true };
   if (!data || data.role !== "COURIER") return { profile: null, error: "Зөвхөн курьерын эрхээр нэвтрэх боломжтой." };
   if (!data.is_active) return { profile: null, error: "Таны эрх идэвхгүй байна. Админтай холбогдоно уу." };
   return { profile: { id: data.id, full_name: data.full_name, phone: data.phone }, error: null };
@@ -41,7 +44,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       return;
     }
-    const { profile: p, error } = await loadCourier(next.user.id);
+    const { profile: p, error, offline } = await loadCourier(next.user.id);
+    if (offline) {
+      // App opened without connectivity: keep the courier signed in with what the
+      // token tells us. Every read and action is still checked by RLS/RPCs.
+      const meta = next.user.user_metadata as { full_name?: string; phone?: string } | undefined;
+      setProfile({ id: next.user.id, full_name: meta?.full_name ?? next.user.email ?? "", phone: meta?.phone ?? null });
+      setSession(next);
+      return;
+    }
     if (!p) {
       await supabase.auth.signOut();
       setNotice(error);

@@ -8,6 +8,7 @@
     "build:admin": "pnpm --filter admin build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter admin test:e2e",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",

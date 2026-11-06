@@ -3,7 +3,7 @@
 Delivery management for small and medium-sized delivery businesses:
 an admin web app and a courier mobile app on top of Supabase.
 
-> Status: **Phase 6 — push notifications wired** (DB trigger → Edge Function → Expo). Next: Phase 7 hardening, deploy, EAS builds. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+> Status: **Phase 7 — ready for deployment** (hardening done; deploy steps need your Supabase / Vercel / Expo accounts — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 
 ## Workspace
 
@@ -20,6 +20,8 @@ an admin web app and a courier mobile app on top of Supabase.
 - [Project brief](docs/PROJECT_BRIEF.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Deployment](docs/DEPLOYMENT.md)
+- [Courier QA checklist](docs/QA_CHECKLIST.md)
 
 ## Requirements
 
@@ -38,6 +40,7 @@ pnpm db:test:race   # concurrency test: N couriers claim one delivery
 pnpm db:types       # generate TS types into packages/shared (after any migration change)
 pnpm typecheck
 pnpm test           # Vitest (shared package)
+pnpm test:e2e       # Playwright admin smoke test (local stack only)
 pnpm dev:admin      # Next.js admin → http://localhost:3000 (needs apps/admin/.env.local)
 pnpm dev:courier    # Expo courier app (needs apps/courier/.env.local)
 ```

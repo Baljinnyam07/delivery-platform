@@ -1,11 +1,27 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { BrandMark } from "@/components/layout/brand";
 import { LoginForm } from "@/features/auth/login-form";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Нэвтрэх" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { error } = await searchParams;
+
+  // Already signed in as an admin → straight to the app.
+  if (!error) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getClaims();
+    if (data?.claims?.sub) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, is_active")
+        .eq("id", data.claims.sub)
+        .maybeSingle();
+      if (profile?.role === "ADMIN" && profile.is_active) redirect("/");
+    }
+  }
   const initialError =
     error === "forbidden" ? "Зөвхөн админ эрхтэй хэрэглэгч нэвтрэх боломжтой." : undefined;
 

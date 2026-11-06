@@ -511,7 +511,7 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 | **4** ✅ | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct (verified in browser + pgTAP) |
 | **5** ✅ | Courier: scaffold, auth, my/available/history, detail, claim, status, payment, Maps | Full flow verified in the web preview + Android bundle builds; **real-device check still pending** |
 | **6** ✅ | Notifications: push token, Edge Function, Realtime | DB → pg_net → Edge Function → Expo verified locally; **delivery to a real phone pending** (needs EAS project + dev build) |
-| **7** | Hardening: error/empty/loading states, Vercel deploy, EAS build, pilot | Pilot with real couriers |
+| **7** 🟡 | Hardening: error/empty/loading states, Vercel deploy, EAS build, pilot | Code hardening + Playwright smoke done; deploy/EAS/pilot need owner accounts (docs/DEPLOYMENT.md) |
 
 ### Testing strategy (kept small, focused on what can break business rules)
 - **Database (most important):** pgTAP in `supabase/tests`

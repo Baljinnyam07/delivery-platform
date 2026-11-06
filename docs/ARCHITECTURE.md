@@ -509,7 +509,7 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 | **2** ✅ | `@delivery/shared`: generated types, enums, status map, zod schemas, error map | Typecheck + Vitest pass; DB↔shared sync tests |
 | **3** ✅ | Admin: scaffold, design tokens, auth, shell, deliveries CRUD + assign/reassign | Create → assign → reassign works end-to-end (verified in browser, incl. realtime) |
 | **4** ✅ | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct (verified in browser + pgTAP) |
-| **5** | Courier: scaffold, auth, my/available/history, detail, claim, status, payment, Maps | Full flow on a real device (dev build) |
+| **5** ✅ | Courier: scaffold, auth, my/available/history, detail, claim, status, payment, Maps | Full flow verified in the web preview + Android bundle builds; **real-device check still pending** |
 | **6** | Notifications: push token, Edge Function, Realtime | Push received on assign/reassign |
 | **7** | Hardening: error/empty/loading states, Vercel deploy, EAS build, pilot | Pilot with real couriers |
 
@@ -565,6 +565,18 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 - **Reports:** single-series daily bar chart (no chart library) with the same data as a table; CSV export of deliveries created in the period (UTF-8 BOM for Excel, formula-injection safe).
 - **Payments list** shows at most 200 records per period (narrow the period for more).
 - `pnpm db:types` writes atomically and refuses empty output, so a stopped database can't wipe the types file.
+
+## Implementation Notes (Phase 5)
+
+- Expo **SDK 58** (React Native 0.88), Expo Router with routes in `apps/courier/src/app/` and `Stack.Protected` for the auth gate. Started from the `blank-typescript` template; template-provided `.claude/settings.json` (plugin enablement) and LICENSE were removed.
+- **Session storage:** `expo-secure-store` (D8) through a chunked adapter (`src/lib/secure-storage.ts`) — Supabase sessions exceed the ~2 KB some iOS versions accept per value. Expo docs suggest `expo-sqlite` instead; we kept the approved dependency.
+- `react-native-url-polyfill` is **not** used (Expo installs a `URL` global, per the Expo Supabase guide).
+- **Courier gate:** only active COURIER profiles stay signed in (`src/lib/auth.tsx`); others are signed out with a Mongolian message.
+- **Realtime:** the courier listens to `deliveries` *and* own `notifications` inserts. A delivery taken away becomes invisible under RLS, so it never arrives as a deliveries event — the notification row (written in the same transaction) is what tells the app to refresh.
+- **Confirmations** use our own bottom `Sheet` instead of `Alert.alert` (same look on Android/iOS, and works in the web preview).
+- **Web preview** (`react-native-web`, `react-dom`) is for development verification only; the product targets Android/iOS.
+- Additional Expo-maintained packages: `@expo/vector-icons` (no longer bundled in SDK 58), `@expo-google-fonts/inter` + `expo-font` (Inter per design system), `eslint-config-expo` (dev).
+- Not in Phase 5: receipt photo upload for bank transfers (needs an image picker — approval required), push notifications (Phase 6).
 
 ## Approved Decisions
 

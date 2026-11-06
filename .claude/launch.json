@@ -4,8 +4,29 @@
     {
       "name": "admin",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "admin", "dev", "--port", "3100"],
+      "runtimeArgs": [
+        "--filter",
+        "admin",
+        "dev",
+        "--port",
+        "3100"
+      ],
       "port": 3100
+    },
+    {
+      "name": "courier-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "courier",
+        "exec",
+        "expo",
+        "start",
+        "--web",
+        "--port",
+        "8081"
+      ],
+      "port": 8081
     }
   ]
 }

@@ -510,7 +510,7 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 | **3** ✅ | Admin: scaffold, design tokens, auth, shell, deliveries CRUD + assign/reassign | Create → assign → reassign works end-to-end (verified in browser, incl. realtime) |
 | **4** ✅ | Admin: dashboard, couriers, payments, reports | Unassigned visible on dashboard; cash per courier correct (verified in browser + pgTAP) |
 | **5** ✅ | Courier: scaffold, auth, my/available/history, detail, claim, status, payment, Maps | Full flow verified in the web preview + Android bundle builds; **real-device check still pending** |
-| **6** | Notifications: push token, Edge Function, Realtime | Push received on assign/reassign |
+| **6** ✅ | Notifications: push token, Edge Function, Realtime | DB → pg_net → Edge Function → Expo verified locally; **delivery to a real phone pending** (needs EAS project + dev build) |
 | **7** | Hardening: error/empty/loading states, Vercel deploy, EAS build, pilot | Pilot with real couriers |
 
 ### Testing strategy (kept small, focused on what can break business rules)
@@ -543,6 +543,35 @@ Implemented in one place — a trigger on `deliveries` that fires when a row **b
 | Time zones | Store `timestamptz`; display in business time zone (config constant). |
 
 ---
+
+## Push Notifications — as built (Phase 6)
+
+```
+RPC / trigger ──INSERT──► notifications
+                              │ AFTER INSERT trigger private.dispatch_push()
+                              │   only if recipient is active and has a token
+                              │   net.http_post(url, {notification_id}, x-webhook-secret)
+                              │   (pg_net sends after COMMIT — rollback ⇒ no push)
+                              ▼
+                 Edge Function send-push (verify_jwt = false, shared secret)
+                   ├─ load notification + token (service role)
+                   ├─ skip if push_sent_at already set (idempotent)
+                   ├─ POST https://exp.host/--/api/v2/push/send (channelId "deliveries")
+                   └─ push_sent_at | push_error; DeviceNotRegistered → clear token
+```
+
+- Only the notification **id** leaves the database; the function reads the rest with the service role.
+- **Courier app:** registers the Expo push token after sign-in (`src/lib/use-push.ts`), creates the Android channel first (required on Android 13+), routes taps (assigned → delivery, available → Available tab, removed/cancelled → My deliveries), and clears the token on sign-out. Web preview uses a no-op (`use-push.web.ts`).
+- **Expo Go cannot receive remote push** (SDK 53+). Push needs an EAS project id and a development/production build.
+
+### Production setup checklist
+1. `npx eas-cli@latest init` in `apps/courier` (adds `extra.eas.projectId`), configure FCM V1 credentials (Android) and APNs (iOS) with EAS.
+2. `supabase functions deploy send-push`
+3. `supabase secrets set PUSH_WEBHOOK_SECRET=<random 32+ chars>` (optional: `EXPO_ACCESS_TOKEN` if enhanced push security is enabled).
+4. In SQL (Vault):
+   `select vault.create_secret('https://<ref>.supabase.co/functions/v1/send-push', 'push_function_url');`
+   `select vault.create_secret('<same secret>', 'push_webhook_secret');`
+5. Local development uses `[edge_runtime.secrets]` in `config.toml` and the Vault rows created by `seed.sql` — never reuse that value in production.
 
 ## Implementation Notes (Phase 3)
 

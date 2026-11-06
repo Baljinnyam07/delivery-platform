@@ -24,7 +24,14 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "color": "#2563EB",
+          "defaultChannel": "deliveries"
+        }
+      ]
     ],
     "scheme": "courier",
     "experiments": {

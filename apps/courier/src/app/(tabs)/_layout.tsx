@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { emitDeliveriesChanged } from "@/lib/events";
 import { useCourier } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { usePush } from "@/lib/use-push";
 import { colors, font } from "@/theme";
 
 function tabIcon(name: React.ComponentProps<typeof Feather>["name"]) {
@@ -45,6 +46,7 @@ function useRealtimeRefresh(courierId: string) {
 export default function TabsLayout() {
   const courier = useCourier();
   useRealtimeRefresh(courier.id);
+  usePush(courier.id);
 
   return (
     <Tabs

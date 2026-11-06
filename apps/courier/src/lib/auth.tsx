@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 import { createContext, use, useCallback, useEffect, useState, type ReactNode } from "react";
+import { unregisterPush } from "./push";
 import { supabase } from "./supabase";
 
 export type CourierProfile = { id: string; full_name: string; phone: string | null };
@@ -86,8 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    // Clear the push token while the session is still valid (RLS needs it).
+    if (profile) await unregisterPush(profile.id);
     await supabase.auth.signOut();
-  }, []);
+  }, [profile]);
 
   return <AuthContext value={{ session, profile, notice, signIn, signOut }}>{children}</AuthContext>;
 }

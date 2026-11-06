@@ -85,3 +85,8 @@ select public.cancel_delivery('00000000-0000-0000-0000-0000000d0007', 'Захи�
 
 -- Remaining UNASSIGNED: d0001, d0006
 select set_config('request.jwt.claims', '', false);
+
+-- Push dispatch (local only): DB → send-push Edge Function through Kong on the
+-- Docker network. Must match [edge_runtime.secrets] in config.toml.
+select vault.create_secret('http://supabase_kong_delivery-platform:8000/functions/v1/send-push', 'push_function_url', 'Local send-push URL');
+select vault.create_secret('local-dev-push-secret', 'push_webhook_secret', 'Local development only');

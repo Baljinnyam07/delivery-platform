@@ -3,7 +3,7 @@
 Delivery management for small and medium-sized delivery businesses:
 an admin web app and a courier mobile app on top of Supabase.
 
-> Status: **Phase 5 — courier app ready** (login, my/available/history, claim, start, complete, return, payment, Maps, realtime). Next: push notifications. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+> Status: **Phase 6 — push notifications wired** (DB trigger → Edge Function → Expo). Next: Phase 7 hardening, deploy, EAS builds. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Workspace
 

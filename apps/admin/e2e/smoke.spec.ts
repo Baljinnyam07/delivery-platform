@@ -27,6 +27,9 @@ test("admin: login → create → assign → record payment", async ({ page }) =
 
   // 3. Open it and assign a courier
   await page.getByLabel("Хайх").fill(customer);
+  // The search is debounced into the URL; wait for it so its router.replace
+  // cannot supersede the click navigation below.
+  await expect(page).toHaveURL(/[?&]q=/);
   const row = page.getByRole("row").filter({ hasText: customer });
   await expect(row).toHaveCount(1);
   await row.getByRole("link").first().click();

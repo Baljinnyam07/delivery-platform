@@ -4,7 +4,6 @@ import {
   DELIVERY_STATUSES,
   DELIVERY_STATUS_META,
   PAYMENT_STATUS_META,
-  type DeliveryStatus,
 } from "@delivery/shared";
 import { SearchIcon, XIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -14,16 +13,16 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { tint } from "@/lib/tones";
 import { cn } from "@/lib/utils";
-import type { CourierOption } from "../queries";
+import type { CourierOption, DeliveryTab } from "../queries";
 import { STATUS_COLOR, STATUS_TEXT } from "./status-badge";
 
 type Props = {
-  counts: Record<DeliveryStatus | "ALL", number>;
+  counts: Record<DeliveryTab, number>;
   couriers: CourierOption[];
 };
 
 const ALL = "__all";
-const TABS: (DeliveryStatus | "ALL")[] = ["ALL", ...DELIVERY_STATUSES];
+const TABS: DeliveryTab[] = ["ALL", ...DELIVERY_STATUSES, "UNPAID"];
 
 export function DeliveriesToolbar({ counts, couriers }: Props) {
   const router = useRouter();
@@ -64,12 +63,12 @@ export function DeliveriesToolbar({ counts, couriers }: Props) {
         <div role="tablist" aria-label="Төлөвөөр шүүх" className="inline-flex gap-1 rounded-lg neon-panel p-1">
           {TABS.map((tab) => {
             const active = status === tab;
-            const label = tab === "ALL" ? "Бүгд" : DELIVERY_STATUS_META[tab].label;
+            const label = tab === "ALL" ? "Бүгд" : tab === "UNPAID" ? "Төлөгдөөгүй" : DELIVERY_STATUS_META[tab].label;
             const color = tab === "ALL" ? null : STATUS_COLOR[tab];
             // Active status tab takes its own hue; "Бүгд" stays ink.
             const activeStyle =
-              active && color
-                ? { backgroundColor: tint(color, 14), color: STATUS_TEXT[tab as DeliveryStatus], boxShadow: `inset 0 0 0 1px ${tint(color, 25)}` }
+              active && color && tab !== "ALL"
+                ? { backgroundColor: tint(color, 14), color: STATUS_TEXT[tab], boxShadow: `inset 0 0 0 1px ${tint(color, 25)}` }
                 : undefined;
             return (
               <button

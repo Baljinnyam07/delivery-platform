@@ -21,19 +21,23 @@ test("admin: login → create → assign → record payment", async ({ page }) =
   await sheet.getByLabel("Нэр").fill(customer);
   await sheet.getByLabel("Утас").fill("9988 7766");
   await sheet.getByLabel("Хүргэх хаяг").fill("СБД, 1-р хороо, E2E байр");
-  await sheet.getByLabel("Төлөх дүн (₮)").fill("15000");
+  await sheet.getByLabel("Барааны дүн (₮)").fill("15000");
+  await sheet.getByLabel("Хүргэлтийн үнэ (₮)").fill("3000");
+  await expect(sheet.getByTestId("total-amount")).toHaveText("18,000₮");
   await sheet.getByRole("button", { name: "Үүсгэх" }).click();
   await expect(page.getByText("Хүргэлт үүслээ.")).toBeVisible();
 
   // 3. Open it and assign a courier
-  await page.getByLabel("Хайх").fill(customer);
+  // The list's own search box (the top bar has a global "Хайх" too).
+  await page.getByPlaceholder("Код, нэр, утас, хаяг…").fill(customer);
   // The search is debounced into the URL; wait for it so its router.replace
   // cannot supersede the click navigation below.
   await expect(page).toHaveURL(/[?&]q=/);
   const row = page.getByRole("row").filter({ hasText: customer });
   await expect(row).toHaveCount(1);
   await row.getByRole("link").first().click();
-  await expect(page.getByRole("heading", { name: /D-\d+/ })).toBeVisible();
+  // No products → brand letter D, e.g. D261109-001
+  await expect(page.getByRole("heading", { name: /D\d{6}-\d{3}/ })).toBeVisible();
 
   await page.getByRole("button", { name: "Хуваарилах" }).click();
   const dialog = page.getByRole("dialog");
@@ -51,7 +55,7 @@ test("admin: login → create → assign → record payment", async ({ page }) =
 
   // 5. The audit timeline shows the whole story
   await expect(page.getByText(`${COURIER_NAME}-д хуваарилсан`)).toBeVisible();
-  await expect(page.getByText(/Төлбөр бүртгэгдсэн · 15,000₮/)).toBeVisible();
+  await expect(page.getByText(/Төлбөр бүртгэгдсэн · 18,000₮/)).toBeVisible();
 });
 
 test("courier accounts cannot use the admin app", async ({ page }) => {

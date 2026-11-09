@@ -164,10 +164,15 @@ function DeliveryView({ d }: { d: DeliveryDetail }) {
 
         <Card style={{ marginTop: 12 }}>
           <View style={styles.payHead}>
-            <Text style={text.secondary}>Төлөх дүн</Text>
+            <Text style={text.secondary}>Нийт төлбөр</Text>
             {d.amount_due > 0 ? <PaymentBadge status={d.payment_status} /> : null}
           </View>
           <Text style={styles.bigAmount}>{d.amount_due > 0 ? formatMNT(d.amount_due) : "Төлбөргүй"}</Text>
+          {d.delivery_fee > 0 ? (
+            <Text style={text.secondary}>
+              Бараа {formatMNT(d.amount_due - d.delivery_fee)} + хүргэлт {formatMNT(d.delivery_fee)}
+            </Text>
+          ) : null}
           {d.payment ? (
             <Text style={text.secondary}>
               {PAYMENT_METHOD_LABELS[d.payment.method]} · {formatDateTime(d.payment.recorded_at)}

@@ -34,7 +34,9 @@ type FormValues = {
   address: string;
   address_note: string;
   package_description: string;
+  /** Goods amount (total minus delivery fee). */
   amount_due: string;
+  delivery_fee: string;
   scheduled_date: string;
   notes: string;
 };
@@ -48,10 +50,13 @@ export type EditableDelivery = {
   address_note: string | null;
   package_description: string | null;
   amount_due: number;
+  delivery_fee: number;
   scheduled_date: string | null;
   notes: string | null;
   payment_status: "PAID" | "UNPAID";
 };
+
+const digits = (s: string) => s.replace(/\D/g, "");
 
 type Props = {
   open: boolean;
@@ -69,7 +74,8 @@ function initialValues(d?: EditableDelivery): FormValues {
     address: d?.address ?? "",
     address_note: d?.address_note ?? "",
     package_description: d?.package_description ?? "",
-    amount_due: d ? String(Math.round(d.amount_due)) : "",
+    amount_due: d ? String(Math.round(d.amount_due - d.delivery_fee)) : "",
+    delivery_fee: d ? String(Math.round(d.delivery_fee)) : "",
     scheduled_date: d ? (d.scheduled_date ?? "") : todayInUlaanbaatar(),
     notes: d?.notes ?? "",
   };
@@ -156,7 +162,9 @@ function DeliveryForm({
   const filledItems = items.filter((i) => i.product_id);
   const autoTotal = itemsTotal(filledItems, products);
   const useItems = !isEdit && filledItems.length > 0;
-  const effectiveAmount = useItems && !amountManual ? autoTotal : Number(values.amount_due.replace(/\D/g, "") || 0);
+  const goodsAmount = useItems && !amountManual ? autoTotal : Number(digits(values.amount_due) || 0);
+  const feeAmount = Number(digits(values.delivery_fee) || 0);
+  const totalAmount = goodsAmount + feeAmount;
 
   function itemsError(): string | null {
     const byId = new Map(products.map((p) => [p.id, p]));
@@ -172,7 +180,9 @@ function DeliveryForm({
   function submit() {
     const payload = {
       ...values,
-      amount_due: values.amount_due.replace(/\D/g, "") || "0",
+      // Create: goods amount (the database adds the fee). Edit: stored total.
+      amount_due: isEdit ? String(totalAmount) : digits(values.amount_due) || "0",
+      delivery_fee: digits(values.delivery_fee) || "0",
     };
     const schema = isEdit ? deliveryUpdateSchema : deliveryCreateSchema;
     const parsed = schema.safeParse(isEdit ? payload : { ...payload, id: createId });
@@ -189,7 +199,10 @@ function DeliveryForm({
     onBusyChange(true);
     startTransition(async () => {
       const input: Record<string, unknown> = { ...payload };
-      if (amountLocked) delete input.amount_due;
+      if (amountLocked) {
+        delete input.amount_due;
+        delete input.delivery_fee;
+      }
       const result = isEdit
         ? await updateDelivery(delivery!.id, input)
         : await createDelivery({
@@ -197,7 +210,7 @@ function DeliveryForm({
             id: createId,
             items: filledItems.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
             amount_override: useItems && !amountManual ? null : payload.amount_due,
-            prepaid_method: prepaid && effectiveAmount > 0 ? prepaidMethod : null,
+            prepaid_method: prepaid && totalAmount > 0 ? prepaidMethod : null,
           });
 
       onBusyChange(false);
@@ -251,7 +264,7 @@ function DeliveryForm({
   const amountField =
     useItems && !amountManual ? (
       <div className="space-y-1.5">
-        <Label>Төлөх дүн</Label>
+        <Label>Барааны дүн</Label>
         <div className="flex h-10 items-center justify-between rounded-lg border bg-white/[0.02] px-3">
           <span className="tabular text-lg font-bold">{formatMNT(autoTotal)}</span>
           <button
@@ -270,7 +283,7 @@ function DeliveryForm({
     ) : (
       <Field
         id="amount_due"
-        label="Төлөх дүн (₮)"
+        label="Барааны дүн (₮)"
         error={errors.amount_due}
         hint={
           amountLocked
@@ -299,6 +312,40 @@ function DeliveryForm({
         </div>
       </Field>
     );
+
+  const feeField = (
+    <Field
+      id="delivery_fee"
+      label="Хүргэлтийн үнэ (₮)"
+      error={errors.delivery_fee}
+      hint={amountLocked ? undefined : "Хүргэлтийн төлбөргүй бол 0"}
+    >
+      <Input
+        id="delivery_fee"
+        value={values.delivery_fee}
+        onChange={set("delivery_fee")}
+        inputMode="numeric"
+        placeholder="0"
+        disabled={amountLocked}
+        className="tabular h-10"
+        aria-invalid={Boolean(errors.delivery_fee)}
+      />
+    </Field>
+  );
+
+  const totalBox = (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-neon-cyan/30 bg-neon-cyan/[0.05] px-3 py-2.5">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Нийт төлбөр</p>
+        <p className="tabular truncate text-xs text-muted-foreground">
+          Бараа {formatMNT(goodsAmount)} + хүргэлт {formatMNT(feeAmount)}
+        </p>
+      </div>
+      <span className="tabular shrink-0 text-xl font-bold" data-testid="total-amount">
+        {formatMNT(totalAmount)}
+      </span>
+    </div>
+  );
 
   const packageField =
     isEdit || !useItems ? (
@@ -340,7 +387,11 @@ function DeliveryForm({
             <section className="space-y-4">
               <h3 className="text-sm font-semibold">Илгээмж ба төлбөр</h3>
               {packageField}
-              {amountField}
+              <div className="grid gap-4 sm:grid-cols-2">
+                {amountField}
+                {feeField}
+              </div>
+              {totalBox}
             </section>
           </div>
         ) : (
@@ -357,13 +408,17 @@ function DeliveryForm({
               <section className="space-y-4">
                 <h3 className="text-sm font-semibold">Төлбөр</h3>
                 {packageField}
-                <div className="sm:max-w-xs">{amountField}</div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {amountField}
+                  {feeField}
+                </div>
+                {totalBox}
                 <PrepaidToggle
-                  paid={prepaid && effectiveAmount > 0}
+                  paid={prepaid && totalAmount > 0}
                   method={prepaidMethod}
                   onPaidChange={setPrepaid}
                   onMethodChange={setPrepaidMethod}
-                  disabled={effectiveAmount === 0}
+                  disabled={totalAmount === 0}
                 />
               </section>
             </div>
@@ -378,8 +433,8 @@ function DeliveryForm({
               {useItems ? `${filledItems.length} бараа · ${pieces} ширхэг · ` : ""}Нийт{" "}
             </span>
             <span className="whitespace-nowrap">
-              <span className="tabular text-base font-bold">{formatMNT(effectiveAmount)}</span>
-              {prepaid && effectiveAmount > 0 ? <span className="ml-2 text-xs text-neon-green">● Төлөгдсөн</span> : null}
+              <span className="tabular text-base font-bold">{formatMNT(totalAmount)}</span>
+              {prepaid && totalAmount > 0 ? <span className="ml-2 text-xs text-neon-green">● Төлөгдсөн</span> : null}
             </span>
           </div>
         )}

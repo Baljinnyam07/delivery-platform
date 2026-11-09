@@ -25,6 +25,8 @@ const deliveryFields = z.object({
   package_description: optionalText(500),
   notes: optionalText(1000),
   amount_due: amountSchema,
+  /** Part of amount_due (total = goods + fee). Omitted → unchanged / 0. */
+  delivery_fee: amountSchema.optional(),
   scheduled_date: optionalDateSchema,
 });
 

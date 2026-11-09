@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 // RLS returns only the courier's own deliveries. Unassigned ones come from
 // list_available_deliveries() with the customer phone hidden (decision D3).
 const COLUMNS =
-  "id, code, status, customer_name, customer_phone, address, address_note, latitude, longitude, package_description, notes, amount_due, payment_status, payment_method, scheduled_date, assigned_at, started_at, delivered_at, cancelled_at, cancel_reason" as const;
+  "id, code, status, customer_name, customer_phone, address, address_note, latitude, longitude, package_description, notes, amount_due, delivery_fee, payment_status, payment_method, scheduled_date, assigned_at, started_at, delivered_at, cancelled_at, cancel_reason" as const;
 
 function fail(error: { code?: string; message?: string } | null): never {
   throw new Error(getErrorMessage(error));

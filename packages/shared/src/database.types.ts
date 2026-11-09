@@ -54,6 +54,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           delivered_at: string | null
+          delivery_fee: number
           id: string
           latitude: number | null
           longitude: number | null
@@ -80,6 +81,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           delivered_at?: string | null
+          delivery_fee?: number
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -106,6 +108,7 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           delivered_at?: string | null
+          delivery_fee?: number
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -324,18 +327,21 @@ export type Database = {
       }
       factories: {
         Row: {
+          code_letter: string | null
           created_at: string
           id: string
           is_active: boolean
           name: string
         }
         Insert: {
+          code_letter?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           name: string
         }
         Update: {
+          code_letter?: string | null
           created_at?: string
           id?: string
           is_active?: boolean

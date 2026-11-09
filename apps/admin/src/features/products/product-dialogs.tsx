@@ -1,6 +1,6 @@
 "use client";
 
-import { formatMNT } from "@delivery/shared";
+import { formatMNT, todayInUlaanbaatar } from "@delivery/shared";
 import { FactoryIcon, Loader2Icon, MinusIcon, PackagePlusIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
@@ -71,7 +71,9 @@ const digits = (v: string) => v.replace(/\D/g, "");
 
 // ---------------- Factory ----------------
 
-export function FactoryDialogButton({ factory }: { factory?: { id: string; name: string } }) {
+type FactoryValue = { id: string; name: string; code_letter: string | null };
+
+export function FactoryDialogButton({ factory }: { factory?: FactoryValue }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -94,14 +96,16 @@ export function FactoryDialogButton({ factory }: { factory?: { id: string; name:
   );
 }
 
-function FactoryForm({ factory, onClose }: { factory?: { id: string; name: string }; onClose: () => void }) {
+function FactoryForm({ factory, onClose }: { factory?: FactoryValue; onClose: () => void }) {
   const [name, setName] = useState(factory?.name ?? "");
+  const [letter, setLetter] = useState(factory?.code_letter ?? "");
   const { errors, pending, run } = useSubmit(onClose, factory ? "Хадгалагдлаа." : "Үйлдвэр нэмэгдлээ.");
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => (factory ? updateFactory(factory.id, { name }) : createFactory({ name })));
+        const input = { name, code_letter: letter };
+        run(() => (factory ? updateFactory(factory.id, input) : createFactory(input)));
       }}
       className="space-y-4"
     >
@@ -111,6 +115,21 @@ function FactoryForm({ factory, onClose }: { factory?: { id: string; name: strin
       </DialogHeader>
       <Field id="factory_name" label="Нэр" error={errors.name}>
         <Input id="factory_name" value={name} onChange={(e) => setName(e.target.value)} autoFocus className="h-9" />
+      </Field>
+      <Field
+        id="factory_letter"
+        label="Захиалгын үсэг"
+        error={errors.code_letter}
+        hint={`Захиалгын дугаар: ${letter || "D"}${todayInUlaanbaatar().slice(2).replaceAll("-", "")}-001. Хоосон бол D.`}
+      >
+        <Input
+          id="factory_letter"
+          value={letter}
+          onChange={(e) => setLetter(e.target.value.replace(/[^a-z]/gi, "").slice(-1).toUpperCase())}
+          maxLength={1}
+          placeholder="N"
+          className="h-9 w-16 text-center font-semibold uppercase"
+        />
       </Field>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose} disabled={pending}>

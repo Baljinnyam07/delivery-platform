@@ -20,8 +20,13 @@ function invalid(error: z.ZodError): ActionResult<never> {
   return { ok: false, error: "Мэдээллээ шалгана уу.", fieldErrors };
 }
 
-function duplicate(error: { code?: string } | null, message: string): ActionResult<never> | null {
-  return error?.code === "23505" ? { ok: false, error: message, fieldErrors: { name: message } } : null;
+function duplicate(error: { code?: string; message?: string } | null, message: string): ActionResult<never> | null {
+  if (error?.code !== "23505") return null;
+  if (error.message?.includes("code_letter")) {
+    const letterMessage = "Энэ үсгийг өөр үйлдвэр ашиглаж байна.";
+    return { ok: false, error: letterMessage, fieldErrors: { code_letter: letterMessage } };
+  }
+  return { ok: false, error: message, fieldErrors: { name: message } };
 }
 
 function done() {

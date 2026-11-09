@@ -11,8 +11,24 @@ export const MSG_PRODUCT = {
 
 const quantitySchema = z.coerce.number(MSG_PRODUCT.quantity).int(MSG_PRODUCT.quantity).min(1, MSG_PRODUCT.quantity).max(100_000);
 
+/** Brand letter in order codes (N261109-007). D and M are reserved. */
+const codeLetterSchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .nullish()
+  .transform((v) => (v ? v : null))
+  .pipe(
+    z
+      .string()
+      .regex(/^[A-Z]$/, "Нэг латин үсэг (A–Z) оруулна уу.")
+      .refine((v) => v !== "D" && v !== "M", "D, M үсгийг системд ашигладаг.")
+      .nullable(),
+  );
+
 export const factorySchema = z.object({
   name: requiredText(120),
+  code_letter: codeLetterSchema,
   is_active: z.boolean().default(true),
 });
 export type FactoryInput = z.input<typeof factorySchema>;

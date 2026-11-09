@@ -111,7 +111,7 @@ export function ProductsBrowser({
             {factories.map((f) => (
               <FactoryItem
                 key={f.id}
-                label={f.name}
+                label={f.code_letter ? `${f.name} · ${f.code_letter}` : f.name}
                 count={f.products.length}
                 warn={f.products.some((p) => p.is_active && p.stock <= p.low_stock_threshold)}
                 muted={!f.is_active}

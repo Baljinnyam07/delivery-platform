@@ -133,7 +133,7 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
                 <li className="flex items-center justify-between bg-white/[0.03] px-5 py-3 text-sm">
                   <span className="text-muted-foreground">
                     Барааны дүн
-                    {itemsTotal !== Number(d.amount_due) ? " (төлөх дүнг гараар өөрчилсөн)" : ""}
+                    {itemsTotal !== Number(d.amount_due) - Number(d.delivery_fee) ? " (дүнг гараар өөрчилсөн)" : ""}
                   </span>
                   <span className="tabular font-semibold">{formatMNT(itemsTotal)}</span>
                 </li>
@@ -158,8 +158,18 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
             }
           >
             <dl className="divide-y">
-              <Row label="Төлөх дүн">
-                <span className="tabular font-medium">{formatMNT(d.amount_due)}</span>
+              {Number(d.delivery_fee) > 0 ? (
+                <>
+                  <Row label="Барааны дүн">
+                    <span className="tabular">{formatMNT(Number(d.amount_due) - Number(d.delivery_fee))}</span>
+                  </Row>
+                  <Row label="Хүргэлтийн үнэ">
+                    <span className="tabular">{formatMNT(d.delivery_fee)}</span>
+                  </Row>
+                </>
+              ) : null}
+              <Row label="Нийт төлбөр">
+                <span className="tabular font-semibold">{formatMNT(d.amount_due)}</span>
               </Row>
               <Row label="Төлөв">
                 {d.amount_due > 0 ? (

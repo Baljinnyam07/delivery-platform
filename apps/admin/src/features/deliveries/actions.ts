@@ -2,6 +2,7 @@
 
 import {
   assignDeliverySchema,
+  deliveryCreateExtrasSchema,
   deliveryCreateSchema,
   deliveryReasonSchema,
   deliveryUpdateSchema,
@@ -41,22 +42,29 @@ function done() {
 export async function createDelivery(input: unknown): Promise<ActionResult<{ id: string }>> {
   await getCurrentAdmin();
   const parsed = deliveryCreateSchema.safeParse(input);
+  const extras = deliveryCreateExtrasSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
+  if (!extras.success) return invalid(extras.error);
 
+  // One transaction in the DB: delivery + line items + stock reservation
+  // (+ prepaid payment). Idempotent on the client-generated id.
   const supabase = await createClient();
-  const { data, error } = await supabase.from("deliveries").insert(parsed.data).select("id").single();
-
+  const { data, error } = await supabase.rpc("create_delivery", {
+    p_delivery: parsed.data,
+    p_items: extras.data.items,
+    p_amount: extras.data.items.length ? (extras.data.amount_override ?? undefined) : parsed.data.amount_due,
+    p_payment_method: extras.data.prepaid_method ?? undefined,
+  });
   if (error) {
-    // Idempotent submit: same client-generated id already created.
-    if (error.code === "23505" && parsed.data.id) {
-      done();
-      return { ok: true, data: { id: parsed.data.id } };
-    }
-    return { ok: false, error: getErrorMessage(error) };
+    const fieldErrors =
+      error.message === "NOT_ENOUGH_STOCK" || error.message === "PRODUCT_NOT_FOUND" || error.message === "ITEMS_INVALID"
+        ? { items: getErrorMessage(error) }
+        : undefined;
+    return { ok: false, error: getErrorMessage(error), fieldErrors };
   }
 
   done();
-  return { ok: true, data: { id: data.id } };
+  return { ok: true, data: { id: data } };
 }
 
 export async function updateDelivery(id: string, input: unknown): Promise<ActionResult> {

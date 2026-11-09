@@ -7,13 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DailyDeliveredChart } from "@/features/stats/daily-chart";
 import { DateRangePicker } from "@/features/stats/date-range-picker";
-import { getCourierStats, getDailyReport, parseDateRange } from "@/features/stats/queries";
+import { getCourierStats, getDailyReport, getFactoryReport, parseDateRange } from "@/features/stats/queries";
+import { FactoryIcon } from "lucide-react";
 
 export const metadata: Metadata = { title: "Тайлан" };
 
 export default async function ReportsPage({ searchParams }: PageProps<"/reports">) {
   const range = parseDateRange(await searchParams);
-  const [days, couriers] = await Promise.all([getDailyReport(range), getCourierStats(range)]);
+  const [days, couriers, factories] = await Promise.all([
+    getDailyReport(range),
+    getCourierStats(range),
+    getFactoryReport(range),
+  ]);
 
   const totals = days.reduce(
     (acc, d) => ({
@@ -53,6 +58,58 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
           <Kpi label="Бэлэн орлого" value={formatMNT(totals.cash)} />
           <Kpi label="Дансаар орлого" value={formatMNT(totals.transfer)} />
         </KpiStrip>
+
+        {factories.length > 0 ? (
+          <div className="grid gap-6 xl:grid-cols-2">
+            {factories.map((f) => (
+              <Card
+                key={f.factoryId}
+                title={
+                  <span className="flex items-center gap-2">
+                    <FactoryIcon className="size-4 text-neon-violet" />
+                    {f.factoryName}
+                  </span>
+                }
+                description={`Хүргэсэн ${f.deliveredQty} ширхэг · ${formatMNT(f.deliveredAmount)}${f.inTransitQty ? ` · замд ${f.inTransitQty}` : ""}`}
+                action={
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={`/reports/factory-export?factory=${f.factoryId}&from=${range.from}&to=${range.to}`} download>
+                      <DownloadIcon />
+                      CSV
+                    </a>
+                  </Button>
+                }
+                bodyClassName="px-0 py-0"
+              >
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="pl-5">Бараа</TableHead>
+                      <TableHead className="text-right">Хүргэсэн</TableHead>
+                      <TableHead className="text-right">Дүн</TableHead>
+                      <TableHead className="text-right">Замд</TableHead>
+                      <TableHead className="pr-5 text-right">Нөөц</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {f.products.map((p) => (
+                      <TableRow key={p.productId}>
+                        <TableCell className="pl-5">
+                          <div className="font-medium">{p.name}</div>
+                          <div className="tabular text-xs text-muted-foreground">{formatMNT(p.unitPrice)} / {p.unit}</div>
+                        </TableCell>
+                        <TableCell className="tabular text-right font-semibold">{p.deliveredQty}</TableCell>
+                        <TableCell className="tabular text-right">{formatMNT(p.deliveredAmount)}</TableCell>
+                        <TableCell className="tabular text-right text-muted-foreground">{p.inTransitQty || "—"}</TableCell>
+                        <TableCell className="tabular pr-5 text-right text-muted-foreground">{p.stock}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            ))}
+          </div>
+        ) : null}
 
         <Card title="Өдөр тутам хүргэсэн" description="Улаанбаатарын цагаар">
           <DailyDeliveredChart days={rows} />

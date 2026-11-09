@@ -1,4 +1,4 @@
-import { BarChart3Icon, LayoutDashboardIcon, PackageIcon, UsersIcon, WalletIcon, type LucideIcon } from "lucide-react";
+import { BarChart3Icon, BoxesIcon, LayoutDashboardIcon, PackageIcon, UsersIcon, WalletIcon, type LucideIcon } from "lucide-react";
 
 /** Cookie that remembers the collapsed desktop sidebar (read on the server to avoid a layout jump). */
 export const SIDEBAR_COOKIE = "sidebar_collapsed";
@@ -18,6 +18,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/", label: "Хянах самбар", icon: LayoutDashboardIcon, key: "h" },
       { href: "/deliveries", label: "Хүргэлтүүд", icon: PackageIcon, key: "d", badge: "unassigned" },
+      { href: "/products", label: "Бараа ба нөөц", icon: BoxesIcon, key: "b" },
       { href: "/couriers", label: "Курьерууд", icon: UsersIcon, key: "c" },
     ],
   },

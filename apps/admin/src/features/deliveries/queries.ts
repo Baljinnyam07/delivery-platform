@@ -129,11 +129,16 @@ export async function listCouriers(): Promise<CourierOption[]> {
 export async function getDeliveryDetail(id: string) {
   const supabase = await createClient();
 
-  const [delivery, history, assignments, payments] = await Promise.all([
+  const [delivery, history, assignments, payments, items] = await Promise.all([
     supabase.from("deliveries").select(DETAIL_COLUMNS).eq("id", id).maybeSingle(),
     supabase.from("delivery_status_history").select("*").eq("delivery_id", id).order("created_at"),
     supabase.from("delivery_assignments").select("*").eq("delivery_id", id).order("started_at"),
     supabase.from("payment_records").select("*").eq("delivery_id", id).order("recorded_at"),
+    supabase
+      .from("delivery_items")
+      .select("id, product_name, unit, unit_price, quantity, line_total, factory:factories(name)")
+      .eq("delivery_id", id)
+      .order("created_at"),
   ]);
 
   if (delivery.error) throw delivery.error;
@@ -161,6 +166,7 @@ export async function getDeliveryDetail(id: string) {
     history: history.data ?? [],
     assignments: assignments.data ?? [],
     payments: payments.data ?? [],
+    items: items.data ?? [],
     people: Object.fromEntries((people ?? []).map((p) => [p.id, p])) as Record<
       string,
       { id: string; full_name: string; role: "ADMIN" | "COURIER" }

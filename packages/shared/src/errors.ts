@@ -20,6 +20,10 @@ export const RPC_ERROR_MESSAGES = {
   AMOUNT_LOCKED: "Төлбөр бүртгэгдсэн тул дүнг өөрчлөх боломжгүй.",
   INVALID_RECEIPT_PATH: "Баримтын файл буруу байна.",
   INVALID_RANGE: "Огнооны хүрээ буруу байна (дээд тал нь 1 жил).",
+  PRODUCT_NOT_FOUND: "Бараа олдсонгүй эсвэл идэвхгүй байна.",
+  NOT_ENOUGH_STOCK: "Барааны нөөц хүрэлцэхгүй байна.",
+  ITEMS_INVALID: "Барааны жагсаалт буруу байна. Ширхэгийг шалгана уу.",
+  INVALID_STOCK_CHANGE: "Нөөцийн өөрчлөлт буруу байна.",
 } as const;
 
 export type RpcErrorCode = keyof typeof RPC_ERROR_MESSAGES;

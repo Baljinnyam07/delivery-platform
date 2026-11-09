@@ -21,7 +21,7 @@ describe("status metadata", () => {
     expect(DELIVERY_STATUS_META.IN_PROGRESS.color).toBe("#EAB308");
     expect(DELIVERY_STATUS_META.ASSIGNED.color).toBe("#2563EB");
     expect(DELIVERY_STATUS_META.CANCELLED.color).toBe("#DC2626");
-    expect(DELIVERY_STATUS_META.UNASSIGNED.color).toBe("#94A3B8");
+    expect(DELIVERY_STATUS_META.UNASSIGNED.color).toBe("#8B5CF6");
   });
 });
 

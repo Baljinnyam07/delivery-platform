@@ -49,7 +49,8 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
   const [detail, couriers] = await Promise.all([getDeliveryDetail(id), listCouriers()]);
   if (!detail) notFound();
 
-  const { delivery: d, payments } = detail;
+  const { delivery: d, payments, items } = detail;
+  const itemsTotal = items.reduce((s, i) => s + Number(i.line_total ?? 0), 0);
   const timeline = buildTimeline(detail);
   const activePayment = payments.find((p) => !p.voided_at);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -107,12 +108,38 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
                 </a>
               </Row>
               <Row label="Нэмэлт заавар">{d.address_note}</Row>
-              <Row label="Илгээмж">{d.package_description}</Row>
+              {items.length ? null : <Row label="Илгээмж">{d.package_description}</Row>}
               <Row label="Хүргэх өдөр">{d.scheduled_date ? formatDate(d.scheduled_date) : null}</Row>
               <Row label="Тэмдэглэл">{d.notes ? <span className="whitespace-pre-line">{d.notes}</span> : null}</Row>
               {d.status === "CANCELLED" ? <Row label="Цуцалсан шалтгаан">{d.cancel_reason}</Row> : null}
             </dl>
           </Card>
+
+          {items.length > 0 ? (
+            <Card title={`Бараа · ${items.reduce((s, i) => s + i.quantity, 0)} ширхэг`}>
+              <ul className="-mx-5 -my-4 divide-y divide-white/[0.06]">
+                {items.map((i) => (
+                  <li key={i.id} className="flex items-center gap-3 px-5 py-3 text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{i.product_name}</p>
+                      <p className="text-xs text-muted-foreground">{i.factory?.name}</p>
+                    </div>
+                    <span className="tabular text-muted-foreground">
+                      {i.quantity} {i.unit} × {formatMNT(Number(i.unit_price))}
+                    </span>
+                    <span className="tabular w-28 text-right font-semibold">{formatMNT(Number(i.line_total ?? 0))}</span>
+                  </li>
+                ))}
+                <li className="flex items-center justify-between bg-white/[0.03] px-5 py-3 text-sm">
+                  <span className="text-muted-foreground">
+                    Барааны дүн
+                    {itemsTotal !== Number(d.amount_due) ? " (төлөх дүнг гараар өөрчилсөн)" : ""}
+                  </span>
+                  <span className="tabular font-semibold">{formatMNT(itemsTotal)}</span>
+                </li>
+              </ul>
+            </Card>
+          ) : null}
 
           <Card
             title="Төлбөр"

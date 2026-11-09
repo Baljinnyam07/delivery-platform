@@ -79,6 +79,8 @@ function DeliveryView({ d }: { d: DeliveryDetail }) {
   });
   const unpaid = d.amount_due > 0 && d.payment_status === "UNPAID";
   const active = d.status === "ASSIGNED" || d.status === "IN_PROGRESS";
+  // Paid before the courier set off (e.g. bank transfer to the shop): collect nothing.
+  const prepaid = d.amount_due > 0 && d.payment_status === "PAID" && active;
 
   async function run(fn: () => Promise<void>, success: string, after?: () => void) {
     setBusy(true);
@@ -102,6 +104,16 @@ function DeliveryView({ d }: { d: DeliveryDetail }) {
           {d.amount_due > 0 ? <PaymentBadge status={d.payment_status} /> : null}
         </View>
 
+        {prepaid ? (
+          <View style={styles.prepaid} accessibilityRole="alert">
+            <Feather name="check-circle" size={22} color={colors.success} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.prepaidTitle}>Төлбөр төлөгдсөн</Text>
+              <Text style={styles.prepaidBody}>Захиалагчаас мөнгө авахгүй. Зөвхөн барааг хүлээлгэн өгнө.</Text>
+            </View>
+          </View>
+        ) : null}
+
         <Text style={[text.h2, { marginTop: 12 }]}>{d.customer_name}</Text>
         <Text style={[text.body, { marginTop: 4 }]}>{d.address}</Text>
         {d.address_note ? <Text style={[text.secondary, { marginTop: 2 }]}>{d.address_note}</Text> : null}
@@ -120,6 +132,20 @@ function DeliveryView({ d }: { d: DeliveryDetail }) {
           </View>
         ) : null}
 
+        {d.items.length > 0 ? (
+          <Card style={{ marginTop: 16 }}>
+            <Text style={[text.secondary, { marginBottom: 8 }]}>Бараа</Text>
+            {d.items.map((i, idx) => (
+              <View key={i.id} style={[styles.itemRow, idx === d.items.length - 1 && { borderBottomWidth: 0 }]}>
+                <Text style={[text.body, { flex: 1 }]}>{i.product_name}</Text>
+                <Text style={styles.itemQty}>
+                  {i.quantity} {i.unit}
+                </Text>
+              </View>
+            ))}
+          </Card>
+        ) : null}
+
         <Card style={{ marginTop: 16 }}>
           <KeyValue
             label="Утас"
@@ -129,7 +155,7 @@ function DeliveryView({ d }: { d: DeliveryDetail }) {
               </Pressable>
             }
           />
-          <KeyValue label="Илгээмж" value={d.package_description ?? "—"} />
+          {d.items.length ? null : <KeyValue label="Илгээмж" value={d.package_description ?? "—"} />}
           <KeyValue label="Хүргэх өдөр" value={d.scheduled_date ? formatDate(d.scheduled_date) : "—"} />
           {d.delivered_at ? <KeyValue label="Хүргэсэн" value={formatDateTime(d.delivered_at)} /> : null}
           {d.status === "CANCELLED" ? <KeyValue label="Цуцалсан шалтгаан" value={d.cancel_reason ?? "—"} /> : null}
@@ -277,6 +303,11 @@ function DeliveryView({ d }: { d: DeliveryDetail }) {
 const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 24, width: "100%", maxWidth: 640, alignSelf: "center" },
   badges: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  prepaid: { flexDirection: "row", gap: 12, alignItems: "center", backgroundColor: "#DCFCE7", borderColor: "#86EFAC", borderWidth: 1, borderRadius: radius.lg, padding: 14, marginTop: 12 },
+  prepaidTitle: { fontFamily: font.bold, fontSize: 17, color: "#15803D" },
+  prepaidBody: { fontFamily: font.regular, fontSize: 14, color: "#166534", marginTop: 2 },
+  itemRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  itemQty: { fontFamily: font.bold, fontSize: 17, color: colors.text, fontVariant: ["tabular-nums"] },
   quick: { flexDirection: "row", gap: 10, marginTop: 16 },
   note: { flexDirection: "row", gap: 10, backgroundColor: colors.primarySoft, borderRadius: radius.lg, padding: 14, marginTop: 16 },
   link: { fontFamily: font.semibold, fontSize: 15, color: colors.primary, fontVariant: ["tabular-nums"] },

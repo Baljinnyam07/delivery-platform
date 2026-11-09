@@ -60,6 +60,57 @@ export async function getDailyReport(range: DateRange) {
   return data ?? [];
 }
 
+export type FactoryReport = {
+  factoryId: string;
+  factoryName: string;
+  deliveredQty: number;
+  deliveredAmount: number;
+  inTransitQty: number;
+  products: {
+    productId: string;
+    name: string;
+    unit: string;
+    unitPrice: number;
+    deliveredQty: number;
+    deliveredAmount: number;
+    inTransitQty: number;
+    cancelledQty: number;
+    stock: number;
+  }[];
+};
+
+/** Sales per factory and product: delivered in the range, open now, current stock. */
+export async function getFactoryReport(range: DateRange): Promise<FactoryReport[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_factory_report", { p_from: range.from, p_to: range.to });
+  if (error) throw error;
+
+  const byFactory = new Map<string, FactoryReport>();
+  for (const r of data ?? []) {
+    let f = byFactory.get(r.factory_id);
+    if (!f) {
+      f = { factoryId: r.factory_id, factoryName: r.factory_name, deliveredQty: 0, deliveredAmount: 0, inTransitQty: 0, products: [] };
+      byFactory.set(r.factory_id, f);
+    }
+    const p = {
+      productId: r.product_id,
+      name: r.product_name,
+      unit: r.unit,
+      unitPrice: Number(r.unit_price),
+      deliveredQty: r.delivered_qty,
+      deliveredAmount: Number(r.delivered_amount),
+      inTransitQty: r.in_transit_qty,
+      cancelledQty: r.cancelled_qty,
+      stock: r.stock,
+    };
+    f.products.push(p);
+    f.deliveredQty += p.deliveredQty;
+    f.deliveredAmount += p.deliveredAmount;
+    f.inTransitQty += p.inTransitQty;
+  }
+  return [...byFactory.values()];
+}
+
 /** Oldest unassigned deliveries first — they have waited longest. */
 export async function getUnassignedQueue(limit = 8) {
   const supabase = await createClient();

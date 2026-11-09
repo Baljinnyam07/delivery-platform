@@ -45,7 +45,7 @@ export async function fetchHistory() {
 
 /** `null` when the delivery is not (or no longer) this courier's. */
 export async function fetchDelivery(id: string) {
-  const [delivery, payments] = await Promise.all([
+  const [delivery, payments, items] = await Promise.all([
     supabase.from("deliveries").select(COLUMNS).eq("id", id).maybeSingle(),
     supabase
       .from("payment_records")
@@ -54,10 +54,15 @@ export async function fetchDelivery(id: string) {
       .is("voided_at", null)
       .order("recorded_at", { ascending: false })
       .limit(1),
+    supabase
+      .from("delivery_items")
+      .select("id, product_name, unit, quantity")
+      .eq("delivery_id", id)
+      .order("created_at"),
   ]);
   if (delivery.error) fail(delivery.error);
   if (!delivery.data) return null;
-  return { ...delivery.data, payment: payments.data?.[0] ?? null };
+  return { ...delivery.data, payment: payments.data?.[0] ?? null, items: items.data ?? [] };
 }
 
 export type DeliveryDetail = NonNullable<Awaited<ReturnType<typeof fetchDelivery>>>;

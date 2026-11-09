@@ -7,6 +7,7 @@ import { AvatarInitial } from "@/components/ui/avatar-initial";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { DeliveryFormSheet } from "@/features/deliveries/components/delivery-form-sheet";
+import type { PickerProduct } from "@/features/products/queries";
 import { useLiveStatus } from "@/features/realtime/realtime-provider";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "./brand";
@@ -19,6 +20,7 @@ type Props = {
   user: { fullName: string; email: string | null };
   unassignedCount: number;
   defaultCollapsed: boolean;
+  products: PickerProduct[];
   children: ReactNode;
 };
 
@@ -137,7 +139,7 @@ function LiveIndicator() {
   );
 }
 
-export function AppShell({ user, unassignedCount, defaultCollapsed, children }: Props) {
+export function AppShell({ user, unassignedCount, defaultCollapsed, products, children }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -294,7 +296,7 @@ export function AppShell({ user, unassignedCount, defaultCollapsed, children }: 
       </div>
 
       <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} onNewDelivery={() => setNewOpen(true)} />
-      <DeliveryFormSheet open={newOpen} onOpenChange={setNewOpen} />
+      <DeliveryFormSheet open={newOpen} onOpenChange={setNewOpen} products={products} />
     </ShellContext>
   );
 }

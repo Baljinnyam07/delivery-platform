@@ -489,13 +489,13 @@ RPC (same transaction) ──INSERT──► notifications
 |---|---|
 | Delivery assigned / reassigned to you | courier |
 | Delivery removed from you (reassign / unassign / cancel) | old courier |
-| Delivery available (created, returned or unassigned) | all active couriers, throttled (see below) |
+| Delivery available (created, returned or unassigned) | all active couriers, one push per delivery (see below) |
 
 ### Anti-spam rules for "delivery available"
 Implemented in one place — a trigger on `deliveries` that fires when a row **becomes** `UNASSIGNED` (insert or update):
 1. Recipients: active couriers only; the courier who just returned the delivery is excluded.
-2. **Throttle:** a courier gets a new `DELIVERY_AVAILABLE` notification only if they have no `DELIVERY_AVAILABLE` notification in the last **10 minutes**. A burst of 20 new deliveries = 1 push per courier, not 20.
-3. Text is generic ("New deliveries are available") so a throttled push is never misleading.
+2. **No throttle** (changed 2026-11-12, migration 0016): every delivery that becomes available sends one `DELIVERY_AVAILABLE` push to each active courier. (Originally at most one per courier per 10 minutes.)
+3. Text names the delivery: title "Шинэ хүргэлт: <code>", body = address. The customer phone is never included (D3).
 4. Assigned / reassigned / removed / cancelled notifications are never throttled — they are personal and actionable.
 
 ---
@@ -617,7 +617,7 @@ Approved on 2026-11-05.
 | D2 | Courier login | Admin-created email/password accounts. No SMS OTP in MVP. |
 | D3 | Phone privacy | Customer phone is hidden from couriers until they claim or are assigned the delivery. |
 | D4 | Payments | One full payment per delivery. No partial payments. |
-| D5 | Available push | Push to all active couriers when a delivery becomes available, with throttling (Section 9). |
+| D5 | Available push | Push to all active couriers when a delivery becomes available, one push per delivery (throttle removed 2026-11-12; Section 9). |
 | D6 | ASSIGNED color | `#2563EB` |
 | D7 | Locale | Currency MNT, time zone `Asia/Ulaanbaatar`. |
 | D8 | Dependencies | `zod`, `@supabase/ssr`, `expo-secure-store` approved. Dev-only: `typescript`, `vitest` (testing strategy), `supabase` CLI. |

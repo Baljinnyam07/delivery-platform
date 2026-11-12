@@ -1,7 +1,7 @@
--- Notifications: personal events and throttled "delivery available" broadcast.
+-- Notifications: personal events and the "delivery available" broadcast (one per delivery).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(12);
 
 create function pg_temp.mk(p_id uuid, p_role text) returns void language sql as $$
   insert into auth.users (instance_id, id, aud, role, email, raw_app_meta_data, raw_user_meta_data)
@@ -44,8 +44,12 @@ insert into public.deliveries (id, customer_name, customer_phone, address)
 values ('dddddddd-0000-0000-0000-000000000002', 'B', '2', 'Addr 2');
 reset role;
 select is((select count(*)::int from public.notifications where type = 'DELIVERY_AVAILABLE'
-           and recipient_id in ('22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333')), 2,
-  'second delivery within 10 minutes is throttled (no spam)');
+           and recipient_id in ('22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333')), 4,
+  'every new delivery notifies every active courier (no throttle)');
+select is((select title from public.notifications n join public.deliveries d on d.id = 'dddddddd-0000-0000-0000-000000000002'
+           where n.recipient_id = '22222222-2222-2222-2222-222222222222' and n.title like '%' || d.code),
+  'Шинэ хүргэлт: ' || (select code from public.deliveries where id = 'dddddddd-0000-0000-0000-000000000002'),
+  'the alert names the delivery');
 
 set local role authenticated;
 select public.assign_delivery('dddddddd-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222');
@@ -58,7 +62,7 @@ select throws_ok($$ select public.assign_delivery('dddddddd-0000-0000-0000-00000
 -- Courier sees only own notifications and can only mark them read.
 select pg_temp.as_user('33333333-3333-3333-3333-333333333333');
 set local role authenticated;
-select is((select count(*)::int from public.notifications), 1, 'courier B sees only own notifications');
+select is((select count(*)::int from public.notifications), 2, 'courier B sees only own notifications');
 select lives_ok($$ update public.notifications set read_at = now() $$, 'courier can mark own notifications read');
 select throws_ok($$ update public.notifications set title = 'x' $$, '42501', null, 'courier cannot edit notification content');
 reset role;

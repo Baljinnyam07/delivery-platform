@@ -29,7 +29,7 @@ Device / OS / build: ____________________ Tester: __________ Date: __________
 ## Realtime & push
 - [ ] Admin assigns a delivery → push arrives (app closed) → tap opens that delivery.
 - [ ] Admin reassigns away / cancels → push arrives; the delivery disappears from "Миний" without manual refresh.
-- [ ] New delivery available → at most one push per 10 minutes.
+- [ ] Every new delivery → one push per courier, titled "Шинэ хүргэлт: <code>" with the address.
 - [ ] Profile shows notification state; denied → "Тохиргоо нээх" opens system settings.
 - [ ] Sign out → no more pushes to this phone.
 

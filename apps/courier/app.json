@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Хүргэлт Курьер",
+    "name": "Neko",
     "slug": "courier",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,12 +8,15 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "mn.delivery.courier"
+      "bundleIdentifier": "mn.delivery.courier",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "mn.delivery.courier",
       "adaptiveIcon": {
-        "backgroundColor": "#2563EB",
+        "backgroundColor": "#08B391",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -30,7 +33,7 @@
       [
         "expo-notifications",
         {
-          "color": "#2563EB",
+          "color": "#08B391",
           "defaultChannel": "deliveries"
         }
       ]

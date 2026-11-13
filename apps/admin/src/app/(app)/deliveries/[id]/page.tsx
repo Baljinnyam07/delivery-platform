@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { DeliveryDetailActions } from "@/features/deliveries/components/delivery-detail-actions";
 import { DeliveryStatusBadge, PaymentStatusBadge } from "@/features/deliveries/components/status-badge";
 import { getDeliveryDetail, listCouriers } from "@/features/deliveries/queries";
+import { listPickerProducts } from "@/features/products/queries";
 import { RecordPaymentButton, VoidPaymentButton } from "@/features/payments/payment-dialogs";
 import { buildTimeline, TONE_COLOR } from "@/features/deliveries/timeline";
 
@@ -46,7 +47,11 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
   const { id } = await params;
   if (!idSchema.safeParse(id).success) notFound();
 
-  const [detail, couriers] = await Promise.all([getDeliveryDetail(id), listCouriers()]);
+  const [detail, couriers, products] = await Promise.all([
+    getDeliveryDetail(id),
+    listCouriers(),
+    listPickerProducts(),
+  ]);
   if (!detail) notFound();
 
   const { delivery: d, payments, items } = detail;
@@ -81,6 +86,15 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
           <DeliveryDetailActions
             delivery={{ ...d, courierName: d.courier?.full_name ?? null }}
             couriers={couriers}
+            products={products}
+            items={items.map((i) => ({
+              product_id: i.product_id,
+              product_name: i.product_name,
+              unit: i.unit,
+              unit_price: Number(i.unit_price),
+              quantity: i.quantity,
+              factory_name: i.factory?.name ?? null,
+            }))}
           />
         }
       />

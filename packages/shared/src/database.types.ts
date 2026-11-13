@@ -1016,6 +1016,21 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_delivery_items: {
+        Args: {
+          p_amount?: number
+          p_delivery_fee?: number
+          p_delivery_id: string
+          p_items: Json
+        }
+        Returns: Database["public"]["Tables"]["deliveries"]["Row"]
+        SetofOptions: {
+          from: "*"
+          to: "deliveries"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       void_payment: {
         Args: { p_payment_id: string; p_reason: string }
         Returns: {

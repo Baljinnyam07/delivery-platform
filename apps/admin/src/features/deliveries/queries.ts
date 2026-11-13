@@ -144,7 +144,7 @@ export async function getDeliveryDetail(id: string) {
     supabase.from("payment_records").select("*").eq("delivery_id", id).order("recorded_at"),
     supabase
       .from("delivery_items")
-      .select("id, product_name, unit, unit_price, quantity, line_total, factory:factories(name)")
+      .select("id, product_id, product_name, unit, unit_price, quantity, line_total, factory:factories(name)")
       .eq("delivery_id", id)
       .order("created_at"),
   ]);

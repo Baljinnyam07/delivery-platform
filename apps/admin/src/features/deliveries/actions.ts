@@ -83,6 +83,49 @@ export async function updateDelivery(id: string, input: unknown): Promise<Action
   return { ok: true };
 }
 
+/**
+ * Edit an unpaid delivery including its products. Items, stock and amount
+ * change in one DB transaction (update_delivery_items); the descriptive
+ * fields follow. `amount_due` here is the goods amount, like on create.
+ */
+export async function updateDeliveryWithItems(id: string, input: unknown): Promise<ActionResult> {
+  await getCurrentAdmin();
+  const parsedId = idSchema.safeParse(id);
+  const parsed = deliveryUpdateSchema.safeParse(input);
+  const extras = deliveryCreateExtrasSchema.safeParse(input);
+  if (!parsedId.success) return { ok: false, error: "Хүргэлт олдсонгүй." };
+  if (!parsed.success) return invalid(parsed.error);
+  if (!extras.success) return invalid(extras.error);
+
+  const { amount_due, delivery_fee, ...descriptive } = parsed.data;
+  const items = extras.data.items;
+  const supabase = await createClient();
+
+  const { error: itemsError } = await supabase.rpc("update_delivery_items", {
+    p_delivery_id: id,
+    p_items: items,
+    p_amount: items.length ? (extras.data.amount_override ?? undefined) : amount_due,
+    p_delivery_fee: delivery_fee,
+  });
+  if (itemsError) {
+    const fieldErrors =
+      itemsError.message === "NOT_ENOUGH_STOCK" ||
+      itemsError.message === "PRODUCT_NOT_FOUND" ||
+      itemsError.message === "ITEMS_INVALID"
+        ? { items: getErrorMessage(itemsError) }
+        : undefined;
+    return { ok: false, error: getErrorMessage(itemsError), fieldErrors };
+  }
+
+  // With products, the package description is their summary (set by the DB).
+  if (items.length) delete descriptive.package_description;
+  const { error } = await supabase.from("deliveries").update(descriptive).eq("id", id);
+  if (error) return { ok: false, error: getErrorMessage(error) };
+
+  done();
+  return { ok: true };
+}
+
 // ---------------- Assignment / status (RPC) ----------------
 
 export async function assignDelivery(input: unknown): Promise<ActionResult> {

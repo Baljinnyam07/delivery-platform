@@ -25,7 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { PickerProduct } from "@/features/products/queries";
 import { cn } from "@/lib/utils";
-import { createDelivery, updateDelivery } from "../actions";
+import { createDelivery, updateDelivery, updateDeliveryWithItems } from "../actions";
 import { DeliveryItemsEditor, PrepaidToggle, itemsTotal, type ItemDraft } from "./delivery-items-editor";
 
 type FormValues = {
@@ -56,6 +56,16 @@ export type EditableDelivery = {
   payment_status: "PAID" | "UNPAID";
 };
 
+/** A product line already on the delivery being edited. */
+export type EditableItem = {
+  product_id: string;
+  product_name: string;
+  unit: string;
+  unit_price: number;
+  quantity: number;
+  factory_name: string | null;
+};
+
 const digits = (s: string) => s.replace(/\D/g, "");
 
 type Props = {
@@ -63,9 +73,42 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   /** Omit to create a new delivery. */
   delivery?: EditableDelivery;
-  /** Catalogue for the product picker (create mode). */
+  /** Product lines of the delivery being edited. */
+  items?: EditableItem[];
+  /** Catalogue for the product picker. */
   products?: PickerProduct[];
 };
+
+/**
+ * Picker catalogue for editing: this delivery's own reservation counts as
+ * available stock, and existing lines keep their price snapshot (as the DB does).
+ * Lines whose product is no longer active stay editable (reduce or remove).
+ */
+function editPickerProducts(products: PickerProduct[], own: EditableItem[]): PickerProduct[] {
+  const mine = new Map<string, EditableItem>();
+  for (const i of own) {
+    const prev = mine.get(i.product_id);
+    mine.set(i.product_id, prev ? { ...prev, quantity: prev.quantity + i.quantity } : i);
+  }
+  const list = products.map((p) => {
+    const o = mine.get(p.id);
+    return o ? { ...p, stock: p.stock + o.quantity, unit_price: o.unit_price } : p;
+  });
+  const known = new Set(products.map((p) => p.id));
+  for (const o of mine.values()) {
+    if (known.has(o.product_id)) continue;
+    list.push({
+      id: o.product_id,
+      name: o.product_name,
+      unit: o.unit,
+      unit_price: o.unit_price,
+      stock: o.quantity,
+      factory_id: `inactive:${o.factory_name ?? ""}`,
+      factory_name: o.factory_name ?? "",
+    });
+  }
+  return list;
+}
 
 function initialValues(d?: EditableDelivery): FormValues {
   return {
@@ -107,19 +150,22 @@ function Field({
   );
 }
 
-export function DeliveryFormSheet({ open, onOpenChange, delivery, products = [] }: Props) {
+export function DeliveryFormSheet({ open, onOpenChange, delivery, items = [], products = [] }: Props) {
   const [busy, setBusy] = useState(false);
+  // Paid deliveries cannot change items or amount → narrow form.
+  const narrow = delivery?.payment_status === "PAID";
   return (
     <Sheet open={open} onOpenChange={(o) => !busy && onOpenChange(o)}>
       <SheetContent
         className={cn(
           "flex flex-col gap-0 p-0 data-[side=right]:w-full",
-          delivery ? "data-[side=right]:sm:max-w-lg" : "data-[side=right]:sm:max-w-[min(1120px,94vw)]",
+          narrow ? "data-[side=right]:sm:max-w-lg" : "data-[side=right]:sm:max-w-[min(1120px,94vw)]",
         )}
       >
         {/* Content unmounts on close, so every open starts with fresh state. */}
         <DeliveryForm
           delivery={delivery}
+          editItems={items}
           products={products}
           onClose={() => onOpenChange(false)}
           onBusyChange={setBusy}
@@ -131,11 +177,13 @@ export function DeliveryFormSheet({ open, onOpenChange, delivery, products = [] 
 
 function DeliveryForm({
   delivery,
-  products,
+  editItems,
+  products: catalogue,
   onClose,
   onBusyChange,
 }: {
   delivery?: EditableDelivery;
+  editItems: EditableItem[];
   products: PickerProduct[];
   onClose: () => void;
   onBusyChange: (busy: boolean) => void;
@@ -153,15 +201,27 @@ function DeliveryForm({
     setValues((v) => ({ ...v, [key]: e.target.value }));
 
   const amountLocked = delivery?.payment_status === "PAID";
+  // Items (and the amount) can change until a payment is recorded.
+  const itemsEditable = !amountLocked;
 
-  // Create mode: product lines, auto amount (overridable) and prepaid flag.
-  const [items, setItems] = useState<ItemDraft[]>([]);
-  const [amountManual, setAmountManual] = useState(false);
+  // Snapshot on open, like the form values.
+  const [products] = useState(() => (isEdit ? editPickerProducts(catalogue, editItems) : catalogue));
+
+  // Product lines, auto amount (overridable) and, on create, the prepaid flag.
+  const [items, setItems] = useState<ItemDraft[]>(() =>
+    // editPickerProducts with an empty catalogue = this delivery's lines, one per product (stock = quantity).
+    editPickerProducts([], editItems).map((p) => ({ key: crypto.randomUUID(), product_id: p.id, quantity: String(p.stock) })),
+  );
+  const [amountManual, setAmountManual] = useState(() => {
+    if (!delivery || editItems.length === 0) return false;
+    const snapshot = editItems.reduce((s, i) => s + i.unit_price * i.quantity, 0);
+    return Math.round(delivery.amount_due - delivery.delivery_fee) !== Math.round(snapshot);
+  });
   const [prepaid, setPrepaid] = useState(false);
   const [prepaidMethod, setPrepaidMethod] = useState<PaymentMethod>("BANK_TRANSFER");
   const filledItems = items.filter((i) => i.product_id);
   const autoTotal = itemsTotal(filledItems, products);
-  const useItems = !isEdit && filledItems.length > 0;
+  const useItems = itemsEditable && filledItems.length > 0;
   const goodsAmount = useItems && !amountManual ? autoTotal : Number(digits(values.amount_due) || 0);
   const feeAmount = Number(digits(values.delivery_fee) || 0);
   const totalAmount = goodsAmount + feeAmount;
@@ -180,13 +240,13 @@ function DeliveryForm({
   function submit() {
     const payload = {
       ...values,
-      // Create: goods amount (the database adds the fee). Edit: stored total.
-      amount_due: isEdit ? String(totalAmount) : digits(values.amount_due) || "0",
+      // Goods amount; the database adds the fee.
+      amount_due: digits(values.amount_due) || "0",
       delivery_fee: digits(values.delivery_fee) || "0",
     };
     const schema = isEdit ? deliveryUpdateSchema : deliveryCreateSchema;
     const parsed = schema.safeParse(isEdit ? payload : { ...payload, id: createId });
-    const itemErr = isEdit ? null : itemsError();
+    const itemErr = itemsEditable ? itemsError() : null;
     if (!parsed.success || itemErr) {
       const next: Record<string, string> = {};
       if (!parsed.success) for (const issue of parsed.error.issues) next[String(issue.path[0])] ??= issue.message;
@@ -199,19 +259,25 @@ function DeliveryForm({
     onBusyChange(true);
     startTransition(async () => {
       const input: Record<string, unknown> = { ...payload };
-      if (amountLocked) {
+      const lines = filledItems.map((i) => ({ product_id: i.product_id, quantity: i.quantity }));
+      const amountOverride = useItems && !amountManual ? null : payload.amount_due;
+      let result;
+      if (!isEdit) {
+        result = await createDelivery({
+          ...input,
+          id: createId,
+          items: lines,
+          amount_override: amountOverride,
+          prepaid_method: prepaid && totalAmount > 0 ? prepaidMethod : null,
+        });
+      } else if (amountLocked) {
+        // Paid: descriptive fields only.
         delete input.amount_due;
         delete input.delivery_fee;
+        result = await updateDelivery(delivery!.id, input);
+      } else {
+        result = await updateDeliveryWithItems(delivery!.id, { ...input, items: lines, amount_override: amountOverride });
       }
-      const result = isEdit
-        ? await updateDelivery(delivery!.id, input)
-        : await createDelivery({
-            ...input,
-            id: createId,
-            items: filledItems.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
-            amount_override: useItems && !amountManual ? null : payload.amount_due,
-            prepaid_method: prepaid && totalAmount > 0 ? prepaidMethod : null,
-          });
 
       onBusyChange(false);
       if (!result.ok) {
@@ -348,12 +414,12 @@ function DeliveryForm({
   );
 
   const packageField =
-    isEdit || !useItems ? (
+    !useItems ? (
       <Field
         id="package_description"
         label="Илгээмжийн тайлбар"
         error={errors.package_description}
-        hint={isEdit ? undefined : "Бараа сонгоогүй үед л бөглөнө."}
+        hint={itemsEditable ? "Бараа сонгоогүй үед л бөглөнө." : undefined}
       >
         <Input id="package_description" value={values.package_description} onChange={set("package_description")} placeholder="Жишээ нь: Жижиг хайрцаг" className="h-10" />
       </Field>
@@ -366,9 +432,11 @@ function DeliveryForm({
       <SheetHeader className="border-b px-4 py-4 pr-12 sm:px-6 sm:py-5">
         <SheetTitle className="text-lg">{isEdit ? `${delivery!.code} засах` : "Шинэ хүргэлт"}</SheetTitle>
         <SheetDescription className="max-sm:text-xs">
-          {isEdit
-            ? "Хүргэлтийн мэдээллийг шинэчилнэ."
-            : "Хүргэлт үүсмэгц хуваарилаагүй төлөвт орно. Сонгосон бараа нөөцөөс хасагдана."}
+          {!isEdit
+            ? "Хүргэлт үүсмэгц хуваарилаагүй төлөвт орно. Сонгосон бараа нөөцөөс хасагдана."
+            : itemsEditable
+              ? "Хассан бараа нөөцөд буцаж, нэмсэн бараа нөөцөөс хасагдана."
+              : "Төлбөр бүртгэгдсэн тул бараа, дүнг өөрчлөх боломжгүй. Эхлээд төлбөрийг хүчингүй болгоно уу."}
         </SheetDescription>
       </SheetHeader>
 
@@ -381,7 +449,7 @@ function DeliveryForm({
         }}
         noValidate
       >
-        {isEdit ? (
+        {!itemsEditable ? (
           <div className="space-y-6 px-4 py-5 sm:px-6">
             {customerFields}
             <section className="space-y-4">
@@ -413,13 +481,15 @@ function DeliveryForm({
                   {feeField}
                 </div>
                 {totalBox}
-                <PrepaidToggle
-                  paid={prepaid && totalAmount > 0}
-                  method={prepaidMethod}
-                  onPaidChange={setPrepaid}
-                  onMethodChange={setPrepaidMethod}
-                  disabled={totalAmount === 0}
-                />
+                {isEdit ? null : (
+                  <PrepaidToggle
+                    paid={prepaid && totalAmount > 0}
+                    method={prepaidMethod}
+                    onPaidChange={setPrepaid}
+                    onMethodChange={setPrepaidMethod}
+                    disabled={totalAmount === 0}
+                  />
+                )}
               </section>
             </div>
           </div>
@@ -427,7 +497,7 @@ function DeliveryForm({
       </form>
 
       <SheetFooter className="gap-2.5 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:gap-3 sm:px-6 sm:py-4">
-        {isEdit ? null : (
+        {!itemsEditable ? null : (
           <div className="flex min-w-0 items-baseline justify-between gap-2 text-sm sm:mr-auto sm:block">
             <span className="text-muted-foreground">
               {useItems ? `${filledItems.length} бараа · ${pieces} ширхэг · ` : ""}Нийт{" "}
@@ -438,7 +508,7 @@ function DeliveryForm({
             </span>
           </div>
         )}
-        <div className={cn("flex gap-2 sm:gap-3", isEdit && "sm:ml-auto")}>
+        <div className={cn("flex gap-2 sm:gap-3", !itemsEditable && "sm:ml-auto")}>
           <Button variant="outline" onClick={onClose} disabled={pending} className="h-11 flex-1 sm:h-10 sm:flex-none">
             Болих
           </Button>

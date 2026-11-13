@@ -4,18 +4,21 @@ import { availableActions, DELIVERY_ACTION_LABELS, type DeliveryStatus } from "@
 import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import type { PickerProduct } from "@/features/products/queries";
 import type { CourierOption } from "../queries";
 import { DeliveryActionDialog, type ActionTarget, type DialogAction } from "./delivery-action-dialog";
-import { DeliveryFormSheet, type EditableDelivery } from "./delivery-form-sheet";
+import { DeliveryFormSheet, type EditableDelivery, type EditableItem } from "./delivery-form-sheet";
 
 const DIALOG_ACTIONS: DialogAction[] = ["assign", "reassign", "unassign", "cancel"];
 
 type Props = {
   delivery: EditableDelivery & { status: DeliveryStatus; courier_id: string | null; courierName: string | null };
   couriers: CourierOption[];
+  items: EditableItem[];
+  products: PickerProduct[];
 };
 
-export function DeliveryDetailActions({ delivery, couriers }: Props) {
+export function DeliveryDetailActions({ delivery, couriers, items, products }: Props) {
   const [editOpen, setEditOpen] = useState(false);
   const [action, setAction] = useState<DialogAction | null>(null);
 
@@ -60,7 +63,13 @@ export function DeliveryDetailActions({ delivery, couriers }: Props) {
         couriers={couriers}
         onOpenChange={(open) => !open && setAction(null)}
       />
-      <DeliveryFormSheet open={editOpen} onOpenChange={setEditOpen} delivery={delivery} />
+      <DeliveryFormSheet
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        delivery={delivery}
+        items={items}
+        products={products}
+      />
     </>
   );
 }

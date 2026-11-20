@@ -3,7 +3,7 @@ import { formatMNT } from "@delivery/shared";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { MyDelivery } from "@/features/deliveries/api";
-import { callPhone, openMaps } from "@/lib/maps";
+import { callPhone, openMaps, sendSms } from "@/lib/maps";
 import { colors, radius, shadow } from "@/theme";
 import { Button, PaymentBadge, StatusBadge, text } from "./ui";
 
@@ -39,8 +39,9 @@ export function DeliveryCard({ d }: { d: MyDelivery }) {
       </Pressable>
 
       <View style={styles.actions}>
-        <Button label="Залгах" icon="phone" variant="secondary" onPress={() => void callPhone(d.customer_phone)} style={{ flex: 1 }} />
-        <Button label="Чиглэл" icon="navigation" variant="secondary" onPress={() => void openMaps(d)} style={{ flex: 1 }} />
+        <Button label="Залгах" icon="phone" variant="secondary" onPress={() => void callPhone(d.customer_phone)} style={{ flex: 1, paddingHorizontal: 6 }} />
+        <Button label="Мессеж" icon="message-square" variant="secondary" onPress={() => void sendSms(d.customer_phone)} style={{ flex: 1, paddingHorizontal: 6 }} />
+        <Button label="Чиглэл" icon="navigation" variant="secondary" onPress={() => void openMaps(d)} style={{ flex: 1, paddingHorizontal: 6 }} />
       </View>
     </View>
   );

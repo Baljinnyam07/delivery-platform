@@ -36,7 +36,8 @@
           "color": "#08B391",
           "defaultChannel": "deliveries"
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "scheme": "courier",
     "experiments": {
@@ -52,6 +53,12 @@
         "projectId": "9302e9c4-365b-443d-963b-35015463e470"
       }
     },
-    "owner": "baljinnyam_3"
+    "owner": "baljinnyam_3",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9302e9c4-365b-443d-963b-35015463e470"
+    }
   }
 }

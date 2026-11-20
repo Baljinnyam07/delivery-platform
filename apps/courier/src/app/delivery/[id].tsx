@@ -24,7 +24,7 @@ import {
   startDelivery,
   type DeliveryDetail,
 } from "@/features/deliveries/api";
-import { callPhone, openMaps } from "@/lib/maps";
+import { callPhone, openMaps, sendSms } from "@/lib/maps";
 import { useToast } from "@/lib/toast";
 import { useQuery } from "@/lib/use-query";
 import { colors, font, radius, TOUCH } from "@/theme";
@@ -120,8 +120,9 @@ function DeliveryView({ d }: { d: DeliveryDetail }) {
 
         {active ? (
           <View style={styles.quick}>
-            <Button label="Залгах" icon="phone" variant="secondary" size="lg" onPress={() => void callPhone(d.customer_phone)} style={{ flex: 1 }} />
-            <Button label="Чиглэл" icon="navigation" variant="secondary" size="lg" onPress={() => void openMaps(d)} style={{ flex: 1 }} />
+            <Button label="Залгах" icon="phone" variant="secondary" size="lg" onPress={() => void callPhone(d.customer_phone)} style={{ flex: 1, paddingHorizontal: 6 }} />
+            <Button label="Мессеж" icon="message-square" variant="secondary" size="lg" onPress={() => void sendSms(d.customer_phone)} style={{ flex: 1, paddingHorizontal: 6 }} />
+            <Button label="Чиглэл" icon="navigation" variant="secondary" size="lg" onPress={() => void openMaps(d)} style={{ flex: 1, paddingHorizontal: 6 }} />
           </View>
         ) : null}
 

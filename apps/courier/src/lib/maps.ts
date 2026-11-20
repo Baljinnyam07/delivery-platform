@@ -17,3 +17,8 @@ export function openMaps(d: Parameters<typeof mapsUrl>[0]) {
 export function callPhone(phone: string) {
   return Linking.openURL(`tel:${phone.replace(/[^\d+]/g, "")}`);
 }
+
+/** Opens the phone's own Messages app with the customer's number filled in. */
+export function sendSms(phone: string) {
+  return Linking.openURL(`sms:${phone.replace(/[^\d+]/g, "")}`);
+}

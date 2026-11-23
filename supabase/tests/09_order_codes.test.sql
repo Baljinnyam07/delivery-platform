@@ -39,8 +39,12 @@ begin
 end;
 $$;
 
--- Counters are per day; start from a clean slate for today.
+-- Counters are per day; start from a clean slate for today. Seed rows made
+-- today (db reset on the same day) would collide, so move them aside.
 delete from private.delivery_code_counters;
+set local session_replication_role = replica;
+update public.deliveries set code = 'X' || code where code like '_' || pg_temp.today() || '-%';
+set local session_replication_role = origin;
 
 select pg_temp.mk('11111111-1111-1111-1111-111111111111', 'ADMIN');
 set local role authenticated;

@@ -24,6 +24,9 @@ export const RPC_ERROR_MESSAGES = {
   NOT_ENOUGH_STOCK: "Барааны нөөц хүрэлцэхгүй байна.",
   ITEMS_INVALID: "Барааны жагсаалт буруу байна. Ширхэгийг шалгана уу.",
   INVALID_STOCK_CHANGE: "Нөөцийн өөрчлөлт буруу байна.",
+  EXPENSE_INVALID: "Зардлын мэдээллээ шалгана уу (огноо, дүн, тайлбар).",
+  EXPENSE_NOT_FOUND: "Зардал олдсонгүй эсвэл аль хэдийн устсан байна.",
+  FACTORY_NOT_FOUND: "Брэнд олдсонгүй.",
 } as const;
 
 export type RpcErrorCode = keyof typeof RPC_ERROR_MESSAGES;

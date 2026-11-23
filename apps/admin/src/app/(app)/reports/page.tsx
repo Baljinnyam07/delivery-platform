@@ -8,16 +8,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DailyDeliveredChart } from "@/features/stats/daily-chart";
 import { DateRangePicker } from "@/features/stats/date-range-picker";
 import { getCourierStats, getDailyReport, getFactoryReport, parseDateRange } from "@/features/stats/queries";
+import { AddExpenseButton, DeleteExpenseButton } from "@/features/expenses/expense-dialogs";
+import { listExpenseFactories, listExpenses } from "@/features/expenses/queries";
 import { FactoryIcon } from "lucide-react";
 
 export const metadata: Metadata = { title: "Тайлан" };
 
 export default async function ReportsPage({ searchParams }: PageProps<"/reports">) {
   const range = parseDateRange(await searchParams);
-  const [days, couriers, factories] = await Promise.all([
+  const [days, couriers, factories, expenses, expenseFactories] = await Promise.all([
     getDailyReport(range),
     getCourierStats(range),
     getFactoryReport(range),
+    listExpenses(range),
+    listExpenseFactories(),
   ]);
 
   const totals = days.reduce(
@@ -106,10 +110,65 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
                     ))}
                   </TableBody>
                 </Table>
+                <dl className="space-y-1.5 border-t bg-white/[0.03] px-5 py-3 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Хүргэсэн дүн</dt>
+                    <dd className="tabular">{formatMNT(f.deliveredAmount)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-muted-foreground">Зардал</dt>
+                    <dd className="tabular">
+                      {expenses.byFactory.get(f.factoryId) ? "−" : ""}
+                      {formatMNT(expenses.byFactory.get(f.factoryId) ?? 0)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between font-semibold">
+                    <dt>Цэвэр үлдэгдэл</dt>
+                    <dd className="tabular">{formatMNT(f.deliveredAmount - (expenses.byFactory.get(f.factoryId) ?? 0))}</dd>
+                  </div>
+                </dl>
               </Card>
             ))}
           </div>
         ) : null}
+
+        <Card
+          title="Зардал"
+          description={expenses.rows.length ? `${expenses.rows.length} бүртгэл · нийт ${formatMNT(expenses.total)}` : "Энэ хугацаанд зардал бүртгээгүй."}
+          action={<AddExpenseButton factories={expenseFactories} />}
+          bodyClassName="px-0 py-0"
+        >
+          {expenses.rows.length ? (
+            <div className="max-h-[420px] overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-card">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="pl-5">Огноо</TableHead>
+                    <TableHead>Тайлбар</TableHead>
+                    <TableHead>Брэнд</TableHead>
+                    <TableHead className="text-right">Дүн</TableHead>
+                    <TableHead className="w-12 pr-5" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {expenses.rows.map((e) => (
+                    <TableRow key={e.id}>
+                      <TableCell className="tabular pl-5">{formatDate(e.spent_on)}</TableCell>
+                      <TableCell className="max-w-[280px] truncate font-medium">{e.description}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {e.factory?.name ?? `Хуваасан (${e.allocations.length})`}
+                      </TableCell>
+                      <TableCell className="tabular text-right">{formatMNT(e.amount)}</TableCell>
+                      <TableCell className="pr-5 text-right">
+                        <DeleteExpenseButton expense={{ id: e.id, description: e.description, amount: e.amount }} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : null}
+        </Card>
 
         <Card title="Өдөр тутам хүргэсэн" description="Улаанбаатарын цагаар">
           <DailyDeliveredChart days={rows} />

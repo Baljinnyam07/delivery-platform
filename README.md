@@ -33,7 +33,7 @@ an admin web app and a courier mobile app on top of Supabase.
 
 ```bash
 pnpm install
-pnpm db:start       # local Supabase (API http://127.0.0.1:55321, DB port 55322)
+pnpm db:start       # local Supabase (API http://127.0.0.1:45321, DB port 45322)
 pnpm db:reset       # re-apply migrations + seed
 pnpm db:test        # pgTAP tests (RLS, RPCs, payments, notifications)
 pnpm db:test:race   # concurrency test: N couriers claim one delivery

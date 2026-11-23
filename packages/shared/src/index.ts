@@ -9,4 +9,5 @@ export * from "./schemas/common";
 export * from "./schemas/delivery";
 export * from "./schemas/payment";
 export * from "./schemas/product";
+export * from "./schemas/expense";
 export * from "./schemas/auth";

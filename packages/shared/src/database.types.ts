@@ -349,6 +349,83 @@ export type Database = {
         }
         Relationships: []
       }
+      expense_allocations: {
+        Row: {
+          amount: number
+          expense_id: string
+          factory_id: string
+        }
+        Insert: {
+          amount: number
+          expense_id: string
+          factory_id: string
+        }
+        Update: {
+          amount?: number
+          expense_id?: string
+          factory_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_allocations_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_allocations_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string
+          factory_id: string | null
+          id: string
+          spent_on: string
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          description: string
+          factory_id?: string | null
+          id?: string
+          spent_on: string
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          factory_id?: string | null
+          id?: string
+          spent_on?: string
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_factory_id_fkey"
+            columns: ["factory_id"]
+            isOneToOne: false
+            referencedRelation: "factories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string
@@ -759,6 +836,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_expense: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_factory_id?: string
+          p_id: string
+          p_spent_on: string
+        }
+        Returns: string
+      }
       create_delivery: {
         Args: {
           p_amount?: number
@@ -1030,6 +1117,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      void_expense: {
+        Args: { p_id: string }
+        Returns: undefined
       }
       void_payment: {
         Args: { p_payment_id: string; p_reason: string }

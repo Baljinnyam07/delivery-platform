@@ -71,7 +71,7 @@ const digits = (v: string) => v.replace(/\D/g, "");
 
 // ---------------- Factory ----------------
 
-type FactoryValue = { id: string; name: string; code_letter: string | null };
+type FactoryValue = { id: string; name: string; code_letter: string | null; bank_account: string | null };
 
 export function FactoryDialogButton({ factory }: { factory?: FactoryValue }) {
   const [open, setOpen] = useState(false);
@@ -99,12 +99,13 @@ export function FactoryDialogButton({ factory }: { factory?: FactoryValue }) {
 function FactoryForm({ factory, onClose }: { factory?: FactoryValue; onClose: () => void }) {
   const [name, setName] = useState(factory?.name ?? "");
   const [letter, setLetter] = useState(factory?.code_letter ?? "");
+  const [account, setAccount] = useState(factory?.bank_account ?? "");
   const { errors, pending, run } = useSubmit(onClose, factory ? "Хадгалагдлаа." : "Үйлдвэр нэмэгдлээ.");
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        const input = { name, code_letter: letter };
+        const input = { name, code_letter: letter, bank_account: account };
         run(() => (factory ? updateFactory(factory.id, input) : createFactory(input)));
       }}
       className="space-y-4"
@@ -129,6 +130,21 @@ function FactoryForm({ factory, onClose }: { factory?: FactoryValue; onClose: ()
           maxLength={1}
           placeholder="N"
           className="h-9 w-16 text-center font-semibold uppercase"
+        />
+      </Field>
+      <Field
+        id="factory_account"
+        label="Дансны мэдээлэл"
+        error={errors.bank_account}
+        hint="Курьерын төлбөрийн мессежид орно. Хоосон бол дансгүй илгээнэ."
+      >
+        <Input
+          id="factory_account"
+          value={account}
+          onChange={(e) => setAccount(e.target.value)}
+          maxLength={300}
+          placeholder="Хаан банк 5000000000 Нэр"
+          className="h-9"
         />
       </Field>
       <DialogFooter>

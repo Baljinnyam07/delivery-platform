@@ -29,6 +29,8 @@ const codeLetterSchema = z
 export const factorySchema = z.object({
   name: requiredText(120),
   code_letter: codeLetterSchema,
+  /** Shown in the courier's payment SMS, e.g. "Хаан банк 5000000000 Нэр". */
+  bank_account: optionalText(300),
   is_active: z.boolean().default(true),
 });
 export type FactoryInput = z.input<typeof factorySchema>;

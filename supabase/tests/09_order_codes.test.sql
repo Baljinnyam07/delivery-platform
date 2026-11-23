@@ -45,6 +45,7 @@ delete from private.delivery_code_counters;
 set local session_replication_role = replica;
 update public.deliveries set code = 'X' || code where code like '_' || pg_temp.today() || '-%';
 set local session_replication_role = origin;
+update public.factories set code_letter = null; -- free N / F for the test brands
 
 select pg_temp.mk('11111111-1111-1111-1111-111111111111', 'ADMIN');
 set local role authenticated;

@@ -18,6 +18,8 @@ export type FactoryWithProducts = {
   name: string;
   /** Brand letter in order codes, e.g. N → N261109-007. */
   code_letter: string | null;
+  /** Bank account text for the courier's payment SMS. */
+  bank_account: string | null;
   is_active: boolean;
   products: ProductRow[];
 };
@@ -27,7 +29,7 @@ export async function listFactoriesWithProducts(): Promise<FactoryWithProducts[]
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("factories")
-    .select("id, name, code_letter, is_active, products(id, factory_id, name, unit, unit_price, stock, low_stock_threshold, is_active)")
+    .select("id, name, code_letter, bank_account, is_active, products(id, factory_id, name, unit, unit_price, stock, low_stock_threshold, is_active)")
     .order("name");
   if (error) throw error;
   return (data ?? []).map((f) => ({

@@ -327,6 +327,7 @@ export type Database = {
       }
       factories: {
         Row: {
+          bank_account: string | null
           code_letter: string | null
           created_at: string
           id: string
@@ -334,6 +335,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          bank_account?: string | null
           code_letter?: string | null
           created_at?: string
           id?: string
@@ -341,6 +343,7 @@ export type Database = {
           name: string
         }
         Update: {
+          bank_account?: string | null
           code_letter?: string | null
           created_at?: string
           id?: string
@@ -1117,6 +1120,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      get_delivery_bank_accounts: {
+        Args: { p_delivery_id: string }
+        Returns: string[]
       }
       void_expense: {
         Args: { p_id: string }

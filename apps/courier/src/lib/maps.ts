@@ -1,4 +1,4 @@
-import { Linking } from "react-native";
+import { Linking, Platform } from "react-native";
 
 /**
  * Google Maps directions link. Opens the Google Maps app when installed,
@@ -18,7 +18,10 @@ export function callPhone(phone: string) {
   return Linking.openURL(`tel:${phone.replace(/[^\d+]/g, "")}`);
 }
 
-/** Opens the phone's own Messages app with the customer's number filled in. */
-export function sendSms(phone: string) {
-  return Linking.openURL(`sms:${phone.replace(/[^\d+]/g, "")}`);
+/** Opens the phone's own Messages app with the number (and optionally the text) filled in. */
+export function sendSms(phone: string, body?: string) {
+  const number = phone.replace(/[^\d+]/g, "");
+  // iOS reads "&body=", Android "?body=".
+  const query = body ? `${Platform.OS === "ios" ? "&" : "?"}body=${encodeURIComponent(body)}` : "";
+  return Linking.openURL(`sms:${number}${query}`);
 }

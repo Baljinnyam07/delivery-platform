@@ -11,24 +11,23 @@ type SmsDelivery = {
 
 /**
  * Payment message for the customer:
- *   Neko элс ×2
+ *   Neko Cassava Элс ×1
  *   Хаан банк 5000000000 Нэр
- *   баярлалаа.
- *   үнэ 64000
- *   Гүйлгээний утга: утасны дугаар
+ *   Үнэ: 64000
+ *   ГҮЙЛГЭЭНИЙ УТГА: Утасны дугаар
+ *
+ *   Манайхыг сонгосонд баярлалаа.
  * Account and price lines only while money is still due.
  */
 export function paymentMessage(d: SmsDelivery, accounts: string[]): string {
   const due = Number(d.amount_due) > 0 && d.payment_status !== "PAID";
-  return [
+  const body = [
     d.package_description,
     ...(due ? accounts : []),
-    "баярлалаа.",
-    due ? `үнэ ${Math.round(Number(d.amount_due))}` : null,
-    due ? "Гүйлгээний утга: утасны дугаар" : null,
-  ]
-    .filter(Boolean)
-    .join("\n");
+    due ? `Үнэ: ${Math.round(Number(d.amount_due))}` : null,
+    due ? "ГҮЙЛГЭЭНИЙ УТГА: Утасны дугаар" : null,
+  ].filter(Boolean);
+  return [...body, "", "Манайхыг сонгосонд баярлалаа."].join("\n").trimStart();
 }
 
 /** Bank accounts of the brands in this delivery (set by the admin per factory). */

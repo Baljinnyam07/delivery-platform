@@ -56,7 +56,7 @@ export function searchFilter(q: string): string | null {
 }
 
 const LIST_COLUMNS =
-  "id, code, customer_name, customer_phone, address, address_note, package_description, notes, amount_due, delivery_fee, latitude, longitude, scheduled_date, status, payment_status, payment_method, courier_id, created_at, courier:profiles!deliveries_courier_id_fkey(id, full_name)" as const;
+  "id, code, customer_name, customer_phone, address, address_note, package_description, notes, amount_due, delivery_fee, latitude, longitude, scheduled_date, status, payment_status, payment_method, courier_id, created_at, courier:profiles!deliveries_courier_id_fkey(id, full_name), creator:profiles!deliveries_created_by_fkey(id, full_name, role)" as const;
 
 const DETAIL_COLUMNS =
   `${LIST_COLUMNS}, assigned_at, started_at, delivered_at, cancelled_at, cancel_reason, created_by` as const;

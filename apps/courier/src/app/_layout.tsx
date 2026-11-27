@@ -43,6 +43,7 @@ function RootNavigator() {
       <Stack.Protected guard={Boolean(session)}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="delivery/[id]" options={{ title: "" }} />
+        <Stack.Screen name="order/new" options={{ title: "Шинэ захиалга" }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="login" options={{ headerShown: false }} />

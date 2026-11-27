@@ -1,7 +1,8 @@
 import { formatDate } from "@delivery/shared";
+import { router } from "expo-router";
 import { DeliveryCard } from "@/components/delivery-card";
 import { TabScreen } from "@/components/screen";
-import { EmptyState, ErrorBanner, Loading, SectionTitle } from "@/components/ui";
+import { Button, EmptyState, ErrorBanner, Loading, SectionTitle } from "@/components/ui";
 import { fetchActive } from "@/features/deliveries/api";
 import { useCourier } from "@/lib/auth";
 import { useQuery } from "@/lib/use-query";
@@ -19,6 +20,15 @@ export default function MyDeliveriesScreen() {
       subtitle={`${courier.full_name} · ${formatDate(new Date())}`}
       refreshing={refreshing}
       onRefresh={refresh}
+      action={
+        <Button
+          label="Захиалга"
+          icon="plus"
+          onPress={() => router.push("/order/new")}
+          accessibilityHint="Шинэ захиалга үүсгэнэ"
+          style={{ paddingHorizontal: 14 }}
+        />
+      }
     >
       {error ? <ErrorBanner message={error} onRetry={reload} /> : null}
       {loading ? <Loading /> : null}
@@ -27,7 +37,7 @@ export default function MyDeliveriesScreen() {
         <EmptyState
           icon="check-circle"
           title="Одоогоор хүргэлт алга"
-          body="“Авах” хэсгээс боломжтой хүргэлтээ сонгоно уу."
+          body="“Авах” хэсгээс хүргэлт сонгох эсвэл “Захиалга” товчоор өөрөө захиалга нэмнэ үү."
         />
       ) : null}
 

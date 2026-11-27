@@ -126,6 +126,19 @@ export default async function DeliveryDetailPage({ params }: PageProps<"/deliver
               <Row label="Хүргэх өдөр">{d.scheduled_date ? formatDate(d.scheduled_date) : null}</Row>
               <Row label="Тэмдэглэл">{d.notes ? <span className="whitespace-pre-line">{d.notes}</span> : null}</Row>
               {d.status === "CANCELLED" ? <Row label="Цуцалсан шалтгаан">{d.cancel_reason}</Row> : null}
+              <Row label="Үүсгэсэн">
+                {d.creator ? (
+                  <>
+                    <span className="font-medium">{d.creator.full_name}</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {d.creator.role === "COURIER" ? "Курьер" : "Админ"} · {formatDateTime(d.created_at)}
+                    </span>
+                  </>
+                ) : (
+                  formatDateTime(d.created_at)
+                )}
+              </Row>
             </dl>
           </Card>
 

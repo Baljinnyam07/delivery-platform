@@ -849,6 +849,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_courier_order: {
+        Args: { p_amount?: number; p_delivery: Json; p_items?: Json }
+        Returns: string
+      }
       create_delivery: {
         Args: {
           p_amount?: number
@@ -917,6 +921,18 @@ export type Database = {
           longitude: number
           package_description: string
           scheduled_date: string
+        }[]
+      }
+      list_order_products: {
+        Args: never
+        Returns: {
+          factory_id: string
+          factory_name: string
+          id: string
+          name: string
+          stock: number
+          unit: string
+          unit_price: number
         }[]
       }
       reassign_delivery: {

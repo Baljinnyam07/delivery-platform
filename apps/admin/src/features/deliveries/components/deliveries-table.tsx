@@ -90,6 +90,14 @@ export function DeliveriesTable({ rows, couriers }: { rows: DeliveryListRow[]; c
                   <Link href={href} className="tabular hover:text-link hover:underline">
                     {row.code}
                   </Link>
+                  {row.creator?.role === "COURIER" ? (
+                    <div
+                      className="mt-0.5 w-fit rounded bg-neon-violet/12 px-1.5 text-[11px] font-normal text-neon-violet"
+                      title={`${row.creator.full_name} өөрөө үүсгэсэн`}
+                    >
+                      Курьер үүсгэсэн
+                    </div>
+                  ) : null}
                 </TableCell>
                 <TableCell>
                   <div className="font-medium">{row.customer_name}</div>
